@@ -26,7 +26,7 @@ export default function DashboardScreen({ navigation }) {
         setSessions(data);
       };
       load();
-    }, [])
+    }, []),
   );
 
   return (
@@ -49,7 +49,11 @@ export default function DashboardScreen({ navigation }) {
             <Text style={styles.progressLabel}>Tu progreso hoy</Text>
             <Text style={styles.progressTitle}>Excelente ritmo</Text>
             <View style={styles.trendBadge}>
-              <MaterialIcons name="trending-up" size={14} color={COLORS.onSecondaryContainer} />
+              <MaterialIcons
+                name="trending-up"
+                size={14}
+                color={COLORS.onSecondaryContainer}
+              />
               <Text style={styles.trendText}>+15% que ayer</Text>
             </View>
           </View>

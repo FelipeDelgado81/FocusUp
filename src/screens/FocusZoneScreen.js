@@ -9,7 +9,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Defs, LinearGradient as SvgGradient, Stop } from 'react-native-svg';
+import Svg, {
+  Circle,
+  Defs,
+  LinearGradient as SvgGradient,
+  Stop,
+} from 'react-native-svg';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 
 const TOTAL_SECONDS = 25 * 60;
@@ -47,7 +52,7 @@ export default function FocusZoneScreen() {
             duration: 1200,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     } else {
       pulseAnim.setValue(1);
@@ -132,7 +137,11 @@ export default function FocusZoneScreen() {
       {/* Controls */}
       <View style={styles.controls}>
         <TouchableOpacity style={styles.controlBtn} onPress={resetTimer}>
-          <MaterialIcons name="replay" size={24} color={COLORS.onSurfaceVariant} />
+          <MaterialIcons
+            name="replay"
+            size={24}
+            color={COLORS.onSurfaceVariant}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -158,7 +167,11 @@ export default function FocusZoneScreen() {
           style={styles.controlBtn}
           onPress={() => setIsActive(false)}
         >
-          <MaterialIcons name="stop" size={24} color={COLORS.onSurfaceVariant} />
+          <MaterialIcons
+            name="stop"
+            size={24}
+            color={COLORS.onSurfaceVariant}
+          />
         </TouchableOpacity>
       </View>
 
@@ -166,7 +179,11 @@ export default function FocusZoneScreen() {
       <View style={styles.breakCard}>
         <View style={styles.breakLeft}>
           <View style={styles.breakIcon}>
-            <MaterialIcons name="coffee" size={24} color={COLORS.onSecondaryContainer} />
+            <MaterialIcons
+              name="coffee"
+              size={24}
+              color={COLORS.onSecondaryContainer}
+            />
           </View>
           <View>
             <Text style={styles.breakLabel}>Siguiente descanso</Text>
