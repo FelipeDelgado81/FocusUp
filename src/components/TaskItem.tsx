@@ -2,12 +2,18 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, RADIUS } from '../constants/theme';
+import type { Task } from '../storage/asyncStorage';
 
-export default function TaskItem({ task, onToggle }) {
+interface Props {
+  task: Task;
+  onToggle: (id: string) => void;
+}
+
+export default function TaskItem({ task, onToggle }: Props) {
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => onToggle && onToggle(task.id)}
+      onPress={() => onToggle(task.id)}
       activeOpacity={0.7}
     >
       <View style={[styles.checkbox, task.completed && styles.checkboxChecked]}>

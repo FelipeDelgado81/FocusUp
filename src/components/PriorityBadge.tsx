@@ -2,22 +2,22 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, RADIUS } from '../constants/theme';
 
-const PRIORITY_STYLES = {
-  ALTA: {
-    bg: COLORS.errorContainer,
-    text: COLORS.onErrorContainer,
-  },
-  MEDIA: {
-    bg: COLORS.surfaceContainerHigh,
-    text: COLORS.onSurfaceVariant,
-  },
-  BAJA: {
-    bg: COLORS.surfaceContainerLow,
-    text: COLORS.onSurfaceVariant,
-  },
+type Priority = 'ALTA' | 'MEDIA' | 'BAJA';
+
+const PRIORITY_STYLES: Record<
+  Priority,
+  { bg: string; text: string }
+> = {
+  ALTA: { bg: COLORS.errorContainer, text: COLORS.onErrorContainer },
+  MEDIA: { bg: COLORS.surfaceContainerHigh, text: COLORS.onSurfaceVariant },
+  BAJA: { bg: COLORS.surfaceContainerLow, text: COLORS.onSurfaceVariant },
 };
 
-export default function PriorityBadge({ priority }) {
+interface Props {
+  priority: Priority;
+}
+
+export default function PriorityBadge({ priority }: Props) {
   const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES.BAJA;
 
   return (

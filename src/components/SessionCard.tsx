@@ -2,27 +2,33 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
+import type { Session } from '../storage/asyncStorage';
 
-const SUBJECT_ICONS = {
+const SUBJECT_ICONS: Record<string, keyof typeof MaterialIcons.glyphMap> = {
   Matemáticas: 'calculate',
   Historia: 'history-edu',
   Programación: 'code',
   default: 'book',
 };
 
-const PRIORITY_COLORS = {
+const PRIORITY_COLORS: Record<string, string> = {
   ALTA: COLORS.primary,
   MEDIA: COLORS.tertiary,
   BAJA: COLORS.secondary,
 };
 
-const PRIORITY_BG = {
+const PRIORITY_BG: Record<string, string> = {
   ALTA: COLORS.primaryFixed,
   MEDIA: COLORS.tertiaryFixed,
   BAJA: COLORS.secondaryFixed,
 };
 
-export default function SessionCard({ session, compact = false }) {
+interface Props {
+  session: Session;
+  compact?: boolean;
+}
+
+export default function SessionCard({ session, compact = false }: Props) {
   const iconName = SUBJECT_ICONS[session.subject] || SUBJECT_ICONS.default;
   const borderColor = PRIORITY_COLORS[session.priority] || COLORS.primary;
   const iconBg = PRIORITY_BG[session.priority] || COLORS.primaryFixed;

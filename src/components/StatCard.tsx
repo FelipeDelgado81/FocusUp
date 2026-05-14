@@ -1,9 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, RADIUS } from '../constants/theme';
 
-export default function StatCard({ icon, iconColor, value, label, style }) {
+interface Props {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  iconColor?: string;
+  value: string | number;
+  label: string;
+  style?: ViewStyle;
+}
+
+export default function StatCard({ icon, iconColor, value, label, style }: Props) {
   return (
     <View style={[styles.card, style]}>
       <MaterialIcons
