@@ -26,63 +26,6 @@ export interface Task {
 type NewSession = Omit<Session, 'id'>;
 type NewTask = Omit<Task, 'id' | 'completed'>;
 
-const DEFAULT_SESSIONS: Session[] = [
-  {
-    id: '1',
-    subject: 'Matemáticas',
-    topic: 'Cálculo Integral',
-    date: '2023-10-17',
-    startTime: '10:00 AM',
-    endTime: '11:30 AM',
-    priority: 'ALTA',
-  },
-  {
-    id: '2',
-    subject: 'Historia',
-    topic: 'Revolución Industrial',
-    date: '2023-10-17',
-    startTime: '12:45 PM',
-    endTime: '02:00 PM',
-    priority: 'MEDIA',
-  },
-  {
-    id: '3',
-    subject: 'Programación',
-    topic: 'Algoritmos con Go',
-    date: '2023-10-17',
-    startTime: '04:30 PM',
-    endTime: '06:00 PM',
-    priority: 'BAJA',
-  },
-];
-
-const DEFAULT_TASKS: Task[] = [
-  {
-    id: '1',
-    title: 'Terminar el ensayo de Historia',
-    dueDate: 'Mañana',
-    priority: 'ALTA',
-    completed: false,
-    category: 'Historia',
-  },
-  {
-    id: '2',
-    title: 'Repasar ejercicios de cálculo',
-    dueDate: 'Hoy, 18:00',
-    priority: 'ALTA',
-    completed: false,
-    category: 'Matemáticas',
-  },
-  {
-    id: '3',
-    title: 'Leer capítulo 4 de Biología',
-    dueDate: '15 de Oct',
-    priority: 'MEDIA',
-    completed: false,
-    category: 'Ciencias',
-  },
-];
-
 // --- Sessions ---
 
 export const getSessions = async (): Promise<Session[]> => {
@@ -91,11 +34,10 @@ export const getSessions = async (): Promise<Session[]> => {
     if (json !== null) {
       return JSON.parse(json) as Session[];
     }
-    await saveSessions(DEFAULT_SESSIONS);
-    return DEFAULT_SESSIONS;
+    return [];
   } catch (e) {
     console.error('Error reading sessions:', e);
-    return DEFAULT_SESSIONS;
+    return [];
   }
 };
 
@@ -133,11 +75,10 @@ export const getTasks = async (): Promise<Task[]> => {
     if (json !== null) {
       return JSON.parse(json) as Task[];
     }
-    await saveTasks(DEFAULT_TASKS);
-    return DEFAULT_TASKS;
+    return [];
   } catch (e) {
     console.error('Error reading tasks:', e);
-    return DEFAULT_TASKS;
+    return [];
   }
 };
 
