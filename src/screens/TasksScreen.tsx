@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,29 +7,24 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
-import { getTasks, toggleTaskCompleted } from '../storage/asyncStorage';
-import type { Task } from '../storage/asyncStorage';
+import { toggleTaskCompleted } from '../storage/asyncStorage';
+import { useTasks } from '../hooks/useTasks';
 import TaskItem from '../components/TaskItem';
 
 const CATEGORIES: string[] = ['Todas', 'Historia', 'Matemáticas', 'Ciencias', 'Arte'];
 
 export default function TasksScreen() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const { tasks, loading, refresh } = useTasks();
   const [selectedCat, setSelectedCat] = useState('Todas');
   const [showCompleted, setShowCompleted] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      (async () => setTasks(await getTasks()))();
-    }, []),
-  );
-
-  const handleToggle = async (id: string): Promise<void> =>
-    setTasks(await toggleTaskCompleted(id));
+  const handleToggle = async (id: string): Promise<void> => {
+    await toggleTaskCompleted(id);
+    refresh();
+  };
 
   const filtered = tasks.filter((t) => {
     const cat = selectedCat === 'Todas' || t.category === selectedCat;

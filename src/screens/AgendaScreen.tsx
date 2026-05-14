@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
-import { getSessions, deleteSession } from '../storage/asyncStorage';
-import type { Session } from '../storage/asyncStorage';
+import { deleteSession } from '../storage/asyncStorage';
+import { useSessions } from '../hooks/useSessions';
 import PriorityBadge from '../components/PriorityBadge';
 
 const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
@@ -42,18 +41,9 @@ interface Props {
 }
 
 export default function AgendaScreen({ navigation }: Props) {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const selectedDay = 1;
-
-  useFocusEffect(
-    useCallback(() => {
-      const load = async () => {
-        const data = await getSessions();
-        setSessions(data);
-      };
-      load();
-    }, []),
-  );
+  const { sessions, loading, refresh } = useSessions();
+  const today = new Date().getDay();
+  const selectedDay = today === 0 ? 6 : today - 1;
 
   const handleDelete = async (id: string) => {
     Alert.alert('Eliminar sesión', '¿Estás seguro?', [
@@ -62,8 +52,8 @@ export default function AgendaScreen({ navigation }: Props) {
         text: 'Eliminar',
         style: 'destructive',
         onPress: async () => {
-          const updated = await deleteSession(id);
-          setSessions(updated);
+          await deleteSession(id);
+          refresh();
         },
       },
     ]);
