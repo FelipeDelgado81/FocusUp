@@ -21,7 +21,7 @@ type IconName = keyof typeof MaterialIcons.glyphMap;
 interface TabItem {
   name: string;
   icon: IconName;
-  component: React.ComponentType;
+  component: React.ComponentType<any>;
 }
 
 const TAB_ITEMS: TabItem[] = [
