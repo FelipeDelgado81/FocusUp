@@ -16,7 +16,15 @@ import NewSessionScreen from '../screens/NewSessionScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const TAB_ITEMS = [
+type IconName = keyof typeof MaterialIcons.glyphMap;
+
+interface TabItem {
+  name: string;
+  icon: IconName;
+  component: React.ComponentType;
+}
+
+const TAB_ITEMS: TabItem[] = [
   { name: 'Inicio', icon: 'home', component: DashboardScreen },
   { name: 'Agenda', icon: 'calendar-month', component: AgendaScreen },
   { name: 'Estudio', icon: 'timer', component: FocusZoneScreen },
