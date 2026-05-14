@@ -14,13 +14,22 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 import { addSession } from '../storage/asyncStorage';
 
-const SUBJECTS = [
+const SUBJECTS: string[] = [
   'Matemáticas Avanzadas',
   'Historia Universal',
   'Biología Molecular',
   'Literatura Contemporánea',
 ];
-const PRIORITIES = [
+
+interface PriorityOption {
+  label: string;
+  value: string;
+  dot: string;
+  activeBg: string;
+  border: string;
+}
+
+const PRIORITIES: PriorityOption[] = [
   {
     label: 'Alta',
     value: 'ALTA',
@@ -44,7 +53,11 @@ const PRIORITIES = [
   },
 ];
 
-export default function NewSessionScreen({ navigation }) {
+interface Props {
+  navigation: { goBack: () => void };
+}
+
+export default function NewSessionScreen({ navigation }: Props) {
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
   const [date, setDate] = useState('');
@@ -87,7 +100,6 @@ export default function NewSessionScreen({ navigation }) {
         </View>
 
         <View style={s.form}>
-          {/* Required notice */}
           <View style={s.notice}>
             <MaterialIcons name="info" size={14} color={COLORS.error} />
             <Text style={s.noticeTxt}>
@@ -95,7 +107,6 @@ export default function NewSessionScreen({ navigation }) {
             </Text>
           </View>
 
-          {/* Subject */}
           <Text style={s.label}>Asignatura *</Text>
           <View style={s.pickerWrap}>
             {SUBJECTS.map((sub) => (
@@ -111,7 +122,6 @@ export default function NewSessionScreen({ navigation }) {
             ))}
           </View>
 
-          {/* Topic */}
           <Text style={s.label}>Tema</Text>
           <TextInput
             style={s.input}
@@ -121,7 +131,6 @@ export default function NewSessionScreen({ navigation }) {
             onChangeText={setTopic}
           />
 
-          {/* Date */}
           <Text style={s.label}>Fecha *</Text>
           <TextInput
             style={s.input}
@@ -131,7 +140,6 @@ export default function NewSessionScreen({ navigation }) {
             onChangeText={setDate}
           />
 
-          {/* Times */}
           <View style={s.timeRow}>
             <View style={{ flex: 1 }}>
               <Text style={s.label}>Inicio *</Text>
@@ -156,7 +164,6 @@ export default function NewSessionScreen({ navigation }) {
             </View>
           </View>
 
-          {/* Priority */}
           <Text style={s.label}>Prioridad *</Text>
           <View style={s.prioRow}>
             {PRIORITIES.map((p) => (
@@ -185,7 +192,6 @@ export default function NewSessionScreen({ navigation }) {
             ))}
           </View>
 
-          {/* Notes */}
           <Text style={s.label}>Notas adicionales</Text>
           <TextInput
             style={[s.input, { height: 100, textAlignVertical: 'top' }]}
@@ -196,7 +202,6 @@ export default function NewSessionScreen({ navigation }) {
             onChangeText={setNotes}
           />
 
-          {/* Buttons */}
           <TouchableOpacity activeOpacity={0.8} onPress={handleSave}>
             <LinearGradient
               colors={[COLORS.primary, COLORS.primaryContainer]}

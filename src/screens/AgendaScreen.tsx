@@ -13,32 +13,37 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 import { getSessions, deleteSession } from '../storage/asyncStorage';
+import type { Session } from '../storage/asyncStorage';
 import PriorityBadge from '../components/PriorityBadge';
 
 const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-const SUBJECT_ICONS = {
+const SUBJECT_ICONS: Record<string, keyof typeof MaterialIcons.glyphMap> = {
   Matemáticas: 'functions',
   Historia: 'history-edu',
   Programación: 'terminal',
   default: 'book',
 };
 
-const PRIORITY_ICON_BG = {
+const PRIORITY_ICON_BG: Record<string, string> = {
   ALTA: COLORS.primaryFixed,
   MEDIA: COLORS.secondaryContainer + '50',
   BAJA: COLORS.tertiaryFixed,
 };
 
-const PRIORITY_ICON_COLOR = {
+const PRIORITY_ICON_COLOR: Record<string, string> = {
   ALTA: COLORS.onPrimaryFixedVariant,
   MEDIA: COLORS.onSecondaryContainer,
   BAJA: COLORS.onTertiaryFixedVariant,
 };
 
-export default function AgendaScreen({ navigation }) {
-  const [sessions, setSessions] = useState([]);
-  const selectedDay = 1; // Tuesday
+interface Props {
+  navigation: { navigate: (screen: string) => void };
+}
+
+export default function AgendaScreen({ navigation }: Props) {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const selectedDay = 1;
 
   useFocusEffect(
     useCallback(() => {
@@ -50,7 +55,7 @@ export default function AgendaScreen({ navigation }) {
     }, []),
   );
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     Alert.alert('Eliminar sesión', '¿Estás seguro?', [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -70,7 +75,6 @@ export default function AgendaScreen({ navigation }) {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Mi Agenda de Estudio</Text>
           <Text style={styles.subtitle}>
@@ -78,7 +82,6 @@ export default function AgendaScreen({ navigation }) {
           </Text>
         </View>
 
-        {/* Calendar strip */}
         <View style={styles.calendarCard}>
           <View style={styles.calendarHeader}>
             <Text style={styles.monthLabel}>Octubre 2023</Text>
@@ -130,7 +133,6 @@ export default function AgendaScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Sessions Header */}
         <View style={styles.sessionsHeader}>
           <Text style={styles.sessionsLabel}>Próximas Sesiones</Text>
           <Text style={styles.sessionsCount}>
@@ -138,7 +140,6 @@ export default function AgendaScreen({ navigation }) {
           </Text>
         </View>
 
-        {/* Session Cards */}
         {sessions.map((session) => (
           <View key={session.id} style={styles.sessionCard}>
             <View style={styles.sessionTop}>
@@ -179,7 +180,7 @@ export default function AgendaScreen({ navigation }) {
                   </View>
                 </View>
               </View>
-              <PriorityBadge priority={session.priority} />
+              <PriorityBadge priority={session.priority as 'ALTA' | 'MEDIA' | 'BAJA'} />
             </View>
             <View style={styles.sessionBottom}>
               <View style={styles.locationRow}>
@@ -222,7 +223,6 @@ export default function AgendaScreen({ navigation }) {
         ))}
       </ScrollView>
 
-      {/* FAB */}
       <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.8}
@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
     color: COLORS.onSurfaceVariant,
     marginTop: 4,
   },
-  // Calendar
   calendarCard: {
     backgroundColor: COLORS.surfaceContainerLowest,
     borderRadius: RADIUS.xxl,
@@ -328,7 +327,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: COLORS.white,
   },
-  // Sessions
   sessionsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

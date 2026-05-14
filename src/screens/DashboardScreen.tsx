@@ -13,11 +13,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 import { getSessions } from '../storage/asyncStorage';
+import type { Session } from '../storage/asyncStorage';
 import SessionCard from '../components/SessionCard';
 import StatCard from '../components/StatCard';
 
-export default function DashboardScreen({ navigation }) {
-  const [sessions, setSessions] = useState([]);
+interface Props {
+  navigation: { navigate: (screen: string) => void };
+}
+
+export default function DashboardScreen({ navigation }: Props) {
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -35,7 +40,6 @@ export default function DashboardScreen({ navigation }) {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Greeting */}
         <View style={styles.greeting}>
           <Text style={styles.greetTitle}>¡Hola, Estudiante! 👋</Text>
           <Text style={styles.greetSub}>
@@ -43,7 +47,6 @@ export default function DashboardScreen({ navigation }) {
           </Text>
         </View>
 
-        {/* Progress Card */}
         <View style={styles.progressCard}>
           <View style={{ zIndex: 1, flex: 1 }}>
             <Text style={styles.progressLabel}>Tu progreso hoy</Text>
@@ -85,7 +88,6 @@ export default function DashboardScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Sessions Header */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Próximas Sesiones</Text>
           <TouchableOpacity>
@@ -93,7 +95,6 @@ export default function DashboardScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Horizontal Sessions */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -104,7 +105,6 @@ export default function DashboardScreen({ navigation }) {
           ))}
         </ScrollView>
 
-        {/* Stats Row */}
         <View style={styles.statsRow}>
           <StatCard
             icon="timer"
@@ -122,7 +122,6 @@ export default function DashboardScreen({ navigation }) {
         </View>
       </ScrollView>
 
-      {/* FAB */}
       <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.8}

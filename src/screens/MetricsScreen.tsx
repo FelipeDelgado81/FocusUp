@@ -4,10 +4,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 
-const WEEKLY_DATA = [40, 65, 90, 55, 75, 30, 20];
-const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const WEEKLY_DATA: number[] = [40, 65, 90, 55, 75, 30, 20];
+const DAY_LABELS: string[] = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-const SUBJECTS = [
+interface Subject {
+  name: string;
+  hours: number;
+  percent: number;
+  color: 'primary' | 'secondary' | 'tertiary';
+  icon: keyof typeof MaterialIcons.glyphMap;
+}
+
+interface SubjectColorSet {
+  text: string;
+  bg: string;
+  bar: string;
+}
+
+const SUBJECTS: Subject[] = [
   {
     name: 'Matemáticas Avanzadas',
     hours: 18,
@@ -31,7 +45,7 @@ const SUBJECTS = [
   },
 ];
 
-const SUBJECT_COLORS = {
+const SUBJECT_COLORS: Record<string, SubjectColorSet> = {
   primary: {
     text: COLORS.primary,
     bg: COLORS.primaryFixed,
@@ -56,7 +70,6 @@ export default function MetricsScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Tu Rendimiento</Text>
           <Text style={styles.subtitle}>
@@ -64,10 +77,8 @@ export default function MetricsScreen() {
           </Text>
         </View>
 
-        {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={styles.statsRow}>
-            {/* Total hours */}
             <View
               style={[
                 styles.statTile,
@@ -80,7 +91,6 @@ export default function MetricsScreen() {
                 <Text style={styles.statValue}>42h</Text>
               </View>
             </View>
-            {/* Streak */}
             <View
               style={[
                 styles.statTile,
@@ -107,7 +117,6 @@ export default function MetricsScreen() {
             </View>
           </View>
 
-          {/* Progress Banner */}
           <View style={styles.progressBanner}>
             <View style={styles.progressIcon}>
               <MaterialIcons
@@ -125,7 +134,6 @@ export default function MetricsScreen() {
           </View>
         </View>
 
-        {/* Bar Chart */}
         <View style={styles.chartCard}>
           <View style={styles.barsContainer}>
             {WEEKLY_DATA.map((h, i) => (
@@ -135,7 +143,7 @@ export default function MetricsScreen() {
                     style={[
                       styles.bar,
                       {
-                        height: `${h}%`,
+                        height: `${h}%` as unknown as number,
                         backgroundColor:
                           i === 2
                             ? COLORS.primary
@@ -143,10 +151,10 @@ export default function MetricsScreen() {
                               ? COLORS.tertiaryFixedDim
                               : COLORS.surfaceVariant,
                       },
-                      i === 2 && {
+                      i === 2 && ({
                         ...SHADOWS.sm,
                         shadowColor: COLORS.primary,
-                      },
+                      } as object),
                     ]}
                   />
                 </View>
@@ -167,7 +175,6 @@ export default function MetricsScreen() {
           </View>
         </View>
 
-        {/* Subject List */}
         <Text style={styles.subjectTitle}>Asignaturas más estudiadas</Text>
         {SUBJECTS.map((sub) => {
           const colors = SUBJECT_COLORS[sub.color];
@@ -198,7 +205,10 @@ export default function MetricsScreen() {
                   <View
                     style={[
                       styles.subjectBar,
-                      { width: `${sub.percent}%`, backgroundColor: colors.bar },
+                      {
+                        width: `${sub.percent}%` as unknown as number,
+                        backgroundColor: colors.bar,
+                      },
                     ]}
                   />
                 </View>
@@ -236,7 +246,6 @@ const styles = StyleSheet.create({
     color: COLORS.onSurfaceVariant,
     marginTop: 6,
   },
-  // Stats Grid
   statsGrid: {
     marginBottom: 24,
   },
@@ -293,7 +302,6 @@ const styles = StyleSheet.create({
     color: COLORS.onSecondaryContainer + 'cc',
     marginTop: 2,
   },
-  // Chart
   chartCard: {
     backgroundColor: COLORS.surfaceContainerLow,
     borderRadius: RADIUS.xxl,
@@ -344,7 +352,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.primary,
   },
-  // Subjects
   subjectTitle: {
     fontSize: 20,
     fontWeight: '700',

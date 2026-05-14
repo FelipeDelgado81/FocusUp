@@ -12,12 +12,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 import { getTasks, toggleTaskCompleted } from '../storage/asyncStorage';
+import type { Task } from '../storage/asyncStorage';
 import TaskItem from '../components/TaskItem';
 
-const CATEGORIES = ['Todas', 'Historia', 'Matemáticas', 'Ciencias', 'Arte'];
+const CATEGORIES: string[] = ['Todas', 'Historia', 'Matemáticas', 'Ciencias', 'Arte'];
 
 export default function TasksScreen() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedCat, setSelectedCat] = useState('Todas');
   const [showCompleted, setShowCompleted] = useState(false);
 
@@ -27,7 +28,8 @@ export default function TasksScreen() {
     }, []),
   );
 
-  const handleToggle = async (id) => setTasks(await toggleTaskCompleted(id));
+  const handleToggle = async (id: string): Promise<void> =>
+    setTasks(await toggleTaskCompleted(id));
 
   const filtered = tasks.filter((t) => {
     const cat = selectedCat === 'Todas' || t.category === selectedCat;

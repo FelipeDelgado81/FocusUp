@@ -22,12 +22,12 @@ const CIRCLE_RADIUS = 120;
 const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export default function FocusZoneScreen() {
-  const [timeLeft, setTimeLeft] = useState(TOTAL_SECONDS);
-  const [isActive, setIsActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number>(TOTAL_SECONDS);
+  const [isActive, setIsActive] = useState<boolean>(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    let interval = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((t) => t - 1);
@@ -35,7 +35,9 @@ export default function FocusZoneScreen() {
     } else if (timeLeft === 0) {
       setIsActive(false);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isActive, timeLeft]);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export default function FocusZoneScreen() {
     }
   }, [isActive]);
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -75,7 +77,6 @@ export default function FocusZoneScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      {/* Title */}
       <View style={styles.titleSection}>
         <Text style={styles.title}>Zona de Enfoque</Text>
         <View style={styles.studyingBadge}>
@@ -91,9 +92,7 @@ export default function FocusZoneScreen() {
         </View>
       </View>
 
-      {/* Timer Ring */}
       <View style={styles.timerContainer}>
-        {/* Glow */}
         <View style={styles.timerGlow} />
         <Svg
           width={CIRCLE_RADIUS * 2 + 24}
@@ -134,7 +133,6 @@ export default function FocusZoneScreen() {
         </View>
       </View>
 
-      {/* Controls */}
       <View style={styles.controls}>
         <TouchableOpacity style={styles.controlBtn} onPress={resetTimer}>
           <MaterialIcons
@@ -175,7 +173,6 @@ export default function FocusZoneScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Break Info */}
       <View style={styles.breakCard}>
         <View style={styles.breakLeft}>
           <View style={styles.breakIcon}>
@@ -236,7 +233,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: COLORS.onSurfaceVariant,
   },
-  // Timer
   timerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -270,7 +266,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     marginTop: 2,
   },
-  // Controls
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -295,7 +290,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Break
   breakCard: {
     width: '100%',
     backgroundColor: COLORS.surfaceContainerLow,
