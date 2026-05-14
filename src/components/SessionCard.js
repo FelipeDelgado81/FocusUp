@@ -45,7 +45,11 @@ export default function SessionCard({ session, compact = false }) {
         {session.topic}
       </Text>
       <View style={styles.timeRow}>
-        <MaterialIcons name="schedule" size={14} color={COLORS.onSurfaceVariant} />
+        <MaterialIcons
+          name="schedule"
+          size={14}
+          color={COLORS.onSurfaceVariant}
+        />
         <Text style={styles.timeText}>
           {session.startTime} - {session.endTime}
         </Text>

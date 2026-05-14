@@ -133,7 +133,7 @@ export const saveTasks = async (tasks) => {
 export const toggleTaskCompleted = async (taskId) => {
   const tasks = await getTasks();
   const updated = tasks.map((t) =>
-    t.id === taskId ? { ...t, completed: !t.completed } : t
+    t.id === taskId ? { ...t, completed: !t.completed } : t,
   );
   await saveTasks(updated);
   return updated;

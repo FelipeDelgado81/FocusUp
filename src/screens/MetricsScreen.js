@@ -1,28 +1,52 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
-import StatCard from '../components/StatCard';
 
 const WEEKLY_DATA = [40, 65, 90, 55, 75, 30, 20];
 const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
 const SUBJECTS = [
-  { name: 'Matemáticas Avanzadas', hours: 18, percent: 45, color: 'primary', icon: 'calculate' },
-  { name: 'Biología Molecular', hours: 12, percent: 30, color: 'secondary', icon: 'biotech' },
-  { name: 'Historia Universal', hours: 10, percent: 25, color: 'tertiary', icon: 'history-edu' },
+  {
+    name: 'Matemáticas Avanzadas',
+    hours: 18,
+    percent: 45,
+    color: 'primary',
+    icon: 'calculate',
+  },
+  {
+    name: 'Biología Molecular',
+    hours: 12,
+    percent: 30,
+    color: 'secondary',
+    icon: 'biotech',
+  },
+  {
+    name: 'Historia Universal',
+    hours: 10,
+    percent: 25,
+    color: 'tertiary',
+    icon: 'history-edu',
+  },
 ];
 
 const SUBJECT_COLORS = {
-  primary: { text: COLORS.primary, bg: COLORS.primaryFixed, bar: COLORS.primary },
-  secondary: { text: COLORS.secondary, bg: COLORS.secondaryFixed, bar: COLORS.secondary },
-  tertiary: { text: COLORS.tertiary, bg: COLORS.tertiaryFixed, bar: COLORS.tertiary },
+  primary: {
+    text: COLORS.primary,
+    bg: COLORS.primaryFixed,
+    bar: COLORS.primary,
+  },
+  secondary: {
+    text: COLORS.secondary,
+    bg: COLORS.secondaryFixed,
+    bar: COLORS.secondary,
+  },
+  tertiary: {
+    text: COLORS.tertiary,
+    bg: COLORS.tertiaryFixed,
+    bar: COLORS.tertiary,
+  },
 };
 
 export default function MetricsScreen() {
@@ -44,7 +68,12 @@ export default function MetricsScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statsRow}>
             {/* Total hours */}
-            <View style={[styles.statTile, { borderBottomWidth: 4, borderBottomColor: COLORS.primary }]}>
+            <View
+              style={[
+                styles.statTile,
+                { borderBottomWidth: 4, borderBottomColor: COLORS.primary },
+              ]}
+            >
               <MaterialIcons name="schedule" size={28} color={COLORS.primary} />
               <View style={styles.statBottom}>
                 <Text style={styles.statLabel}>Total de horas</Text>
@@ -52,13 +81,26 @@ export default function MetricsScreen() {
               </View>
             </View>
             {/* Streak */}
-            <View style={[styles.statTile, { backgroundColor: COLORS.tertiaryFixed }]}>
-              <MaterialIcons name="local-fire-department" size={28} color={COLORS.tertiary} />
+            <View
+              style={[
+                styles.statTile,
+                { backgroundColor: COLORS.tertiaryFixed },
+              ]}
+            >
+              <MaterialIcons
+                name="local-fire-department"
+                size={28}
+                color={COLORS.tertiary}
+              />
               <View style={styles.statBottom}>
-                <Text style={[styles.statLabel, { color: COLORS.onTertiaryFixed }]}>
+                <Text
+                  style={[styles.statLabel, { color: COLORS.onTertiaryFixed }]}
+                >
                   Racha actual
                 </Text>
-                <Text style={[styles.statValue, { color: COLORS.onTertiaryFixed }]}>
+                <Text
+                  style={[styles.statValue, { color: COLORS.onTertiaryFixed }]}
+                >
                   7 días
                 </Text>
               </View>
@@ -68,7 +110,11 @@ export default function MetricsScreen() {
           {/* Progress Banner */}
           <View style={styles.progressBanner}>
             <View style={styles.progressIcon}>
-              <MaterialIcons name="trending-up" size={24} color={COLORS.secondary} />
+              <MaterialIcons
+                name="trending-up"
+                size={24}
+                color={COLORS.secondary}
+              />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.progressTitle}>Progreso Imparable</Text>
@@ -94,8 +140,8 @@ export default function MetricsScreen() {
                           i === 2
                             ? COLORS.primary
                             : i > 4
-                            ? COLORS.tertiaryFixedDim
-                            : COLORS.surfaceVariant,
+                              ? COLORS.tertiaryFixedDim
+                              : COLORS.surfaceVariant,
                       },
                       i === 2 && {
                         ...SHADOWS.sm,
@@ -128,12 +174,20 @@ export default function MetricsScreen() {
           return (
             <View key={sub.name} style={styles.subjectCard}>
               <View style={styles.subjectLeft}>
-                <View style={[styles.subjectIcon, { backgroundColor: colors.bg }]}>
-                  <MaterialIcons name={sub.icon} size={20} color={colors.text} />
+                <View
+                  style={[styles.subjectIcon, { backgroundColor: colors.bg }]}
+                >
+                  <MaterialIcons
+                    name={sub.icon}
+                    size={20}
+                    color={colors.text}
+                  />
                 </View>
                 <View>
                   <Text style={styles.subjectName}>{sub.name}</Text>
-                  <Text style={styles.subjectHours}>{sub.hours} horas totales</Text>
+                  <Text style={styles.subjectHours}>
+                    {sub.hours} horas totales
+                  </Text>
                 </View>
               </View>
               <View style={styles.subjectRight}>

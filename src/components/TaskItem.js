@@ -10,12 +10,7 @@ export default function TaskItem({ task, onToggle }) {
       onPress={() => onToggle && onToggle(task.id)}
       activeOpacity={0.7}
     >
-      <View
-        style={[
-          styles.checkbox,
-          task.completed && styles.checkboxChecked,
-        ]}
-      >
+      <View style={[styles.checkbox, task.completed && styles.checkboxChecked]}>
         {task.completed && (
           <MaterialIcons name="check" size={16} color={COLORS.white} />
         )}
@@ -31,7 +26,11 @@ export default function TaskItem({ task, onToggle }) {
           <MaterialIcons
             name={task.dueDate.includes('Hoy') ? 'event' : 'schedule'}
             size={14}
-            color={task.priority === 'ALTA' ? COLORS.tertiary : COLORS.onSurfaceVariant}
+            color={
+              task.priority === 'ALTA'
+                ? COLORS.tertiary
+                : COLORS.onSurfaceVariant
+            }
           />
           <Text
             style={[

@@ -6,20 +6,20 @@ FocusUp es una aplicación móvil desarrollada con React Native que permite orga
 
 ## 🚀 Características
 
-* 📋 Gestión de sesiones de estudio
-* 📅 Agenda organizada por días
-* ⏱️ Temporizador tipo Pomodoro
-* 📊 Estadísticas de progreso
-* 💾 Almacenamiento local de datos
-* 🎨 Interfaz moderna y sencilla
+- 📋 Gestión de sesiones de estudio
+- 📅 Agenda organizada por días
+- ⏱️ Temporizador tipo Pomodoro
+- 📊 Estadísticas de progreso
+- 💾 Almacenamiento local de datos
+- 🎨 Interfaz moderna y sencilla
 
 ---
 
 ## 🧱 Tecnologías utilizadas
 
-* React Native (Expo)
-* React Navigation
-* AsyncStorage
+- React Native (Expo)
+- React Navigation
+- AsyncStorage
 
 ---
 
@@ -61,12 +61,11 @@ npx expo start
 
 ## 📱 Ejecutar en dispositivo
 
-* Descargar la app **Expo Go** en tu celular
-* Escanear el código QR que aparece en la terminal
-* También puedes ejecutar en:
-
-  * Android (presionando `a`)
-  * Navegador web (presionando `w`)
+- Descargar la app **Expo Go** en tu celular
+- Escanear el código QR que aparece en la terminal
+- También puedes ejecutar en:
+  - Android (presionando `a`)
+  - Navegador web (presionando `w`)
 
 ---
 
@@ -78,8 +77,7 @@ Este proyecto fue desarrollado con el objetivo de aplicar conocimientos en desar
 
 ## 💡 Futuras mejoras
 
-* Sistema de autenticación de usuarios
-* Sincronización en la nube
-* Notificaciones de estudio
-* Mejoras en estadísticas y visualización de datos
-
+- Sistema de autenticación de usuarios
+- Sincronización en la nube
+- Notificaciones de estudio
+- Mejoras en estadísticas y visualización de datos

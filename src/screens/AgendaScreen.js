@@ -47,7 +47,7 @@ export default function AgendaScreen({ navigation }) {
         setSessions(data);
       };
       load();
-    }, [])
+    }, []),
   );
 
   const handleDelete = async (id) => {
@@ -84,10 +84,18 @@ export default function AgendaScreen({ navigation }) {
             <Text style={styles.monthLabel}>Octubre 2023</Text>
             <View style={styles.calendarNav}>
               <TouchableOpacity>
-                <MaterialIcons name="chevron-left" size={24} color={COLORS.primary} />
+                <MaterialIcons
+                  name="chevron-left"
+                  size={24}
+                  color={COLORS.primary}
+                />
               </TouchableOpacity>
               <TouchableOpacity>
-                <MaterialIcons name="chevron-right" size={24} color={COLORS.primary} />
+                <MaterialIcons
+                  name="chevron-right"
+                  size={24}
+                  color={COLORS.primary}
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -125,7 +133,9 @@ export default function AgendaScreen({ navigation }) {
         {/* Sessions Header */}
         <View style={styles.sessionsHeader}>
           <Text style={styles.sessionsLabel}>Próximas Sesiones</Text>
-          <Text style={styles.sessionsCount}>{sessions.length} sesiones hoy</Text>
+          <Text style={styles.sessionsCount}>
+            {sessions.length} sesiones hoy
+          </Text>
         </View>
 
         {/* Session Cards */}
@@ -136,13 +146,21 @@ export default function AgendaScreen({ navigation }) {
                 <View
                   style={[
                     styles.sessionIcon,
-                    { backgroundColor: PRIORITY_ICON_BG[session.priority] || COLORS.primaryFixed },
+                    {
+                      backgroundColor:
+                        PRIORITY_ICON_BG[session.priority] ||
+                        COLORS.primaryFixed,
+                    },
                   ]}
                 >
                   <MaterialIcons
-                    name={SUBJECT_ICONS[session.subject] || SUBJECT_ICONS.default}
+                    name={
+                      SUBJECT_ICONS[session.subject] || SUBJECT_ICONS.default
+                    }
                     size={22}
-                    color={PRIORITY_ICON_COLOR[session.priority] || COLORS.onSurface}
+                    color={
+                      PRIORITY_ICON_COLOR[session.priority] || COLORS.onSurface
+                    }
                   />
                 </View>
                 <View style={{ flex: 1 }}>
@@ -150,7 +168,11 @@ export default function AgendaScreen({ navigation }) {
                     {session.subject} {session.topic}
                   </Text>
                   <View style={styles.sessionTime}>
-                    <MaterialIcons name="schedule" size={14} color={COLORS.onSurfaceVariant} />
+                    <MaterialIcons
+                      name="schedule"
+                      size={14}
+                      color={COLORS.onSurfaceVariant}
+                    />
                     <Text style={styles.sessionTimeText}>
                       {session.startTime} - {session.endTime}
                     </Text>
@@ -169,8 +191,8 @@ export default function AgendaScreen({ navigation }) {
                         session.priority === 'ALTA'
                           ? COLORS.primary
                           : session.priority === 'MEDIA'
-                          ? COLORS.secondary
-                          : COLORS.tertiary,
+                            ? COLORS.secondary
+                            : COLORS.tertiary,
                     },
                   ]}
                 />
@@ -178,13 +200,21 @@ export default function AgendaScreen({ navigation }) {
               </View>
               <View style={styles.actionButtons}>
                 <TouchableOpacity style={styles.actionBtn}>
-                  <MaterialIcons name="edit" size={18} color={COLORS.onSurfaceVariant} />
+                  <MaterialIcons
+                    name="edit"
+                    size={18}
+                    color={COLORS.onSurfaceVariant}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtn}
                   onPress={() => handleDelete(session.id)}
                 >
-                  <MaterialIcons name="delete" size={18} color={COLORS.onSurfaceVariant} />
+                  <MaterialIcons
+                    name="delete"
+                    size={18}
+                    color={COLORS.onSurfaceVariant}
+                  />
                 </TouchableOpacity>
               </View>
             </View>

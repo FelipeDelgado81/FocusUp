@@ -6,7 +6,11 @@ import { COLORS, RADIUS } from '../constants/theme';
 export default function StatCard({ icon, iconColor, value, label, style }) {
   return (
     <View style={[styles.card, style]}>
-      <MaterialIcons name={icon} size={24} color={iconColor || COLORS.primary} />
+      <MaterialIcons
+        name={icon}
+        size={24}
+        color={iconColor || COLORS.primary}
+      />
       <Text style={styles.value}>{value}</Text>
       <Text style={styles.label}>{label}</Text>
     </View>
