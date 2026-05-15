@@ -108,15 +108,15 @@ export default function AppNavigator() {
         <Stack.Screen
           name="NuevaTarea"
           component={NewTaskScreen}
-          options={{
+          options={({ route }) => ({
             headerShown: true,
-            title: 'Nueva Tarea',
+            title: route.params?.taskId ? 'Editar Tarea' : 'Nueva Tarea',
             headerStyle: { backgroundColor: COLORS.background },
             headerTintColor: COLORS.primary,
             headerTitleStyle: { fontWeight: '700', color: COLORS.onBackground },
             presentation: 'modal',
             animation: 'slide_from_bottom',
-          }}
+          })}
         />
       </Stack.Navigator>
     </NavigationContainer>
