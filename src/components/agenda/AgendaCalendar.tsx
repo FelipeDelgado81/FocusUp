@@ -29,13 +29,21 @@ export default function AgendaCalendar({
         <Text style={styles.monthLabel}>{monthLabel}</Text>
         <View style={styles.calendarNav}>
           <TouchableOpacity onPress={onPrevWeek}>
-            <MaterialIcons name="chevron-left" size={24} color={COLORS.primary} />
+            <MaterialIcons
+              name="chevron-left"
+              size={24}
+              color={COLORS.primary}
+            />
           </TouchableOpacity>
           <TouchableOpacity onPress={onToday}>
             <Text style={styles.todayBtn}>Hoy</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={onNextWeek}>
-            <MaterialIcons name="chevron-right" size={24} color={COLORS.primary} />
+            <MaterialIcons
+              name="chevron-right"
+              size={24}
+              color={COLORS.primary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -51,7 +59,9 @@ export default function AgendaCalendar({
               style={[styles.dayCell, selected && styles.dayCellSelected]}
               onPress={() => onSelectDay(index)}
             >
-              <Text style={[styles.dayLabel, selected && styles.dayLabelSelected]}>
+              <Text
+                style={[styles.dayLabel, selected && styles.dayLabelSelected]}
+              >
                 {WEEK_DAY_LABELS[index]}
               </Text>
               <Text
@@ -65,7 +75,10 @@ export default function AgendaCalendar({
               </Text>
               {(selected || today) && (
                 <View
-                  style={[styles.dayDot, today && !selected && styles.dayDotToday]}
+                  style={[
+                    styles.dayDot,
+                    today && !selected && styles.dayDotToday,
+                  ]}
                 />
               )}
             </TouchableOpacity>

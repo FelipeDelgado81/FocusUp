@@ -32,8 +32,7 @@ export default function SubjectStatsList({ subjects }: SubjectStatsListProps) {
             <View>
               <Text style={styles.subjectName}>{subject.name}</Text>
               <Text style={styles.subjectHours}>
-                {subject.count}{' '}
-                {subject.count === 1 ? 'sesión' : 'sesiones'}
+                {subject.count} {subject.count === 1 ? 'sesión' : 'sesiones'}
               </Text>
             </View>
           </View>

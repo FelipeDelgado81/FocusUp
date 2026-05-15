@@ -24,7 +24,11 @@ export default function FormActions({
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
         >
-          <MaterialIcons name="check-circle" size={20} color={COLORS.onPrimary} />
+          <MaterialIcons
+            name="check-circle"
+            size={20}
+            color={COLORS.onPrimary}
+          />
           <Text style={styles.saveText}>{saveLabel}</Text>
         </LinearGradient>
       </TouchableOpacity>

@@ -4,10 +4,7 @@ import { COLORS, RADIUS } from '../constants/theme';
 
 type Priority = 'ALTA' | 'MEDIA' | 'BAJA';
 
-const PRIORITY_STYLES: Record<
-  Priority,
-  { bg: string; text: string }
-> = {
+const PRIORITY_STYLES: Record<Priority, { bg: string; text: string }> = {
   ALTA: { bg: COLORS.errorContainer, text: COLORS.onErrorContainer },
   MEDIA: { bg: COLORS.surfaceContainerHigh, text: COLORS.onSurfaceVariant },
   BAJA: { bg: COLORS.surfaceContainerLow, text: COLORS.onSurfaceVariant },

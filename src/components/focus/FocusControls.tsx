@@ -27,7 +27,11 @@ export default function FocusControls({
         />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.playBtn} activeOpacity={0.8} onPress={onToggle}>
+      <TouchableOpacity
+        style={styles.playBtn}
+        activeOpacity={0.8}
+        onPress={onToggle}
+      >
         <LinearGradient
           colors={[COLORS.primary, COLORS.primaryContainer]}
           style={styles.playGradient}
@@ -43,11 +47,7 @@ export default function FocusControls({
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.controlBtn} onPress={onStop}>
-        <MaterialIcons
-          name="stop"
-          size={24}
-          color={COLORS.onSurfaceVariant}
-        />
+        <MaterialIcons name="stop" size={24} color={COLORS.onSurfaceVariant} />
       </TouchableOpacity>
     </View>
   );

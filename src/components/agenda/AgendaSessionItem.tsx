@@ -66,7 +66,9 @@ export default function AgendaSessionItem({
             )}
           </View>
         </View>
-        <PriorityBadge priority={session.priority as 'ALTA' | 'MEDIA' | 'BAJA'} />
+        <PriorityBadge
+          priority={session.priority as 'ALTA' | 'MEDIA' | 'BAJA'}
+        />
       </View>
 
       <View style={styles.sessionBottom}>
@@ -75,7 +77,11 @@ export default function AgendaSessionItem({
             style={styles.actionBtn}
             onPress={() => onEdit(session.id)}
           >
-            <MaterialIcons name="edit" size={18} color={COLORS.onSurfaceVariant} />
+            <MaterialIcons
+              name="edit"
+              size={18}
+              color={COLORS.onSurfaceVariant}
+            />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionBtn}

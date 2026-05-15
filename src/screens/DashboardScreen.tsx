@@ -48,7 +48,10 @@ export default function DashboardScreen() {
               progress={progress}
             />
             <DashboardSessionList sessions={sessions} />
-            <DashboardStatsRow totalCount={totalCount} todayCount={todayCount} />
+            <DashboardStatsRow
+              totalCount={totalCount}
+              todayCount={todayCount}
+            />
           </>
         ) : (
           <DashboardEmptyState

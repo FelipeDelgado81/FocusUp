@@ -43,10 +43,13 @@ export function useTasks(): UseTasksReturn {
     setTasks(updated);
   }, []);
 
-  const update = useCallback(async (id: string, updates: Partial<Omit<Task, 'id'>>) => {
-    const updated = await updateTask(id, updates);
-    setTasks(updated);
-  }, []);
+  const update = useCallback(
+    async (id: string, updates: Partial<Omit<Task, 'id'>>) => {
+      const updated = await updateTask(id, updates);
+      setTasks(updated);
+    },
+    [],
+  );
 
   const toggle = useCallback(async (id: string) => {
     const updated = await toggleTaskCompleted(id);

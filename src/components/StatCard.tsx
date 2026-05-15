@@ -11,7 +11,13 @@ interface Props {
   style?: ViewStyle;
 }
 
-export default function StatCard({ icon, iconColor, value, label, style }: Props) {
+export default function StatCard({
+  icon,
+  iconColor,
+  value,
+  label,
+  style,
+}: Props) {
   return (
     <View style={[styles.card, style]}>
       <MaterialIcons

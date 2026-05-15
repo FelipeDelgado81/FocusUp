@@ -2,7 +2,15 @@ import type { MaterialIcons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 import { formatDateKey } from './date';
 
-export const WEEK_DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+export const WEEK_DAY_LABELS = [
+  'Lun',
+  'Mar',
+  'Mié',
+  'Jue',
+  'Vie',
+  'Sáb',
+  'Dom',
+];
 
 export const MONTH_NAMES = [
   'Enero',
@@ -19,7 +27,10 @@ export const MONTH_NAMES = [
   'Diciembre',
 ];
 
-export const SUBJECT_ICONS: Record<string, keyof typeof MaterialIcons.glyphMap> = {
+export const SUBJECT_ICONS: Record<
+  string,
+  keyof typeof MaterialIcons.glyphMap
+> = {
   Matemáticas: 'functions',
   Historia: 'history-edu',
   Programación: 'terminal',

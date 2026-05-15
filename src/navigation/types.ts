@@ -15,7 +15,8 @@ export type TabParamList = {
   Tareas: undefined;
 };
 
-export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+export type RootStackNavigationProp =
+  NativeStackNavigationProp<RootStackParamList>;
 export type TabNavigationProp = BottomTabNavigationProp<TabParamList>;
 
 export type ScreenNavigationProp<T extends keyof RootStackParamList> =

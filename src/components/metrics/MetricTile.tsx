@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, RADIUS } from '../../constants/theme';
 

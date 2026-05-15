@@ -30,7 +30,9 @@ export default function MetricsScreen() {
       >
         <MetricsHeader
           totalSessions={metrics.totalSessions}
-          subtitle={isEmpty ? 'Aquí verás tus estadísticas de estudio.' : undefined}
+          subtitle={
+            isEmpty ? 'Aquí verás tus estadísticas de estudio.' : undefined
+          }
         />
 
         {isEmpty ? (

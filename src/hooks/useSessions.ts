@@ -43,10 +43,13 @@ export function useSessions(): UseSessionsReturn {
     setSessions(updated);
   }, []);
 
-  const update = useCallback(async (id: string, updates: Partial<Omit<Session, 'id'>>) => {
-    const updated = await updateSession(id, updates);
-    setSessions(updated);
-  }, []);
+  const update = useCallback(
+    async (id: string, updates: Partial<Omit<Session, 'id'>>) => {
+      const updated = await updateSession(id, updates);
+      setSessions(updated);
+    },
+    [],
+  );
 
   const remove = useCallback(async (id: string) => {
     const updated = await deleteSession(id);
