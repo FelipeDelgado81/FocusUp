@@ -1,107 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
-import { useSessions } from '../hooks/useSessions';
-import type { RootStackNavigationProp, RootStackParamList } from '../navigation/types';
-import type { RouteProp } from '@react-navigation/native';
-
-const SUBJECTS: string[] = [
-  'Matemáticas Avanzadas',
-  'Historia Universal',
-  'Biología Molecular',
-  'Literatura Contemporánea',
-  'Programación',
-  'Física',
-  'Química',
-  'Inglés',
-];
-
-interface PriorityOption {
-  label: string;
-  value: string;
-  dot: string;
-  activeBg: string;
-  border: string;
-}
-
-const PRIORITIES: PriorityOption[] = [
-  {
-    label: 'Alta',
-    value: 'ALTA',
-    dot: COLORS.error,
-    activeBg: COLORS.errorContainer + '50',
-    border: COLORS.error,
-  },
-  {
-    label: 'Media',
-    value: 'MEDIA',
-    dot: COLORS.tertiary,
-    activeBg: COLORS.tertiaryFixed,
-    border: COLORS.tertiary,
-  },
-  {
-    label: 'Baja',
-    value: 'BAJA',
-    dot: COLORS.secondary,
-    activeBg: COLORS.secondaryContainer + '50',
-    border: COLORS.secondary,
-  },
-];
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import DateTimeField from '../components/forms/DateTimeField';
+import FormActions from '../components/forms/FormActions';
+import FormField from '../components/forms/FormField';
+import FormScaffold from '../components/forms/FormScaffold';
+import OptionChips from '../components/forms/OptionChips';
+import PrioritySelector from '../components/forms/PrioritySelector';
+import { SUBJECTS } from '../constants/formOptions';
+import { COLORS, RADIUS } from '../constants/theme';
+import { useSessions, type Session } from '../hooks/useSessions';
+import type {
+  RootStackNavigationProp,
+  RootStackParamList,
+} from '../navigation/types';
+import { formatDate, formatTime, parseDate, parseTime } from '../utils/dateTime';
 
 type NuevaSesionRouteProp = RouteProp<RootStackParamList, 'NuevaSesion'>;
 
-function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+function getInitialDate(value?: string): Date {
+  return parseDate(value ?? '') ?? new Date();
 }
 
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-}
-
-function parseDate(str: string): Date | null {
-  const parts = str.split('-');
-  if (parts.length !== 3) return null;
-  const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-  return isNaN(d.getTime()) ? null : d;
-}
-
-function parseTime(str: string): Date | null {
-  const clean = str.replace(/\s*(AM|PM)/i, '').trim();
-  const parts = clean.split(':');
-  if (parts.length < 2) return null;
-  const d = new Date();
-  d.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
-  return isNaN(d.getTime()) ? null : d;
+function getInitialTime(value: string | undefined, fallback: string): Date {
+  return parseTime(value ?? fallback) ?? new Date();
 }
 
 export default function NewSessionScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
   const route = useRoute<NuevaSesionRouteProp>();
   const { sessions, add, update } = useSessions();
+
   const editingId = route.params?.sessionId;
   const editingSession = editingId
-    ? sessions.find((s) => s.id === editingId)
+    ? sessions.find((session) => session.id === editingId)
     : undefined;
 
   const [subject, setSubject] = useState(editingSession?.subject ?? '');
@@ -113,43 +46,34 @@ export default function NewSessionScreen() {
   const [location, setLocation] = useState(editingSession?.location ?? '');
   const [notes, setNotes] = useState(editingSession?.notes ?? '');
 
-  const [datePickerDate, setDatePickerDate] = useState<Date>(
-    parseDate(editingSession?.date ?? '') ?? new Date(),
+  const [datePickerDate, setDatePickerDate] = useState(
+    getInitialDate(editingSession?.date),
   );
-  const [startTimeDate, setStartTimeDate] = useState<Date>(
-    parseTime(editingSession?.startTime ?? '09:00') ?? new Date(),
+  const [startTimeDate, setStartTimeDate] = useState(
+    getInitialTime(editingSession?.startTime, '09:00'),
   );
-  const [endTimeDate, setEndTimeDate] = useState<Date>(
-    parseTime(editingSession?.endTime ?? '10:30') ?? new Date(),
+  const [endTimeDate, setEndTimeDate] = useState(
+    getInitialTime(editingSession?.endTime, '10:30'),
   );
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [visiblePicker, setVisiblePicker] = useState<
+    'date' | 'startTime' | 'endTime' | null
+  >(null);
 
   useEffect(() => {
-    if (editingSession) {
-      setSubject(editingSession.subject);
-      setTopic(editingSession.topic);
-      setDate(editingSession.date);
-      setStartTime(editingSession.startTime);
-      setEndTime(editingSession.endTime);
-      setPriority(editingSession.priority);
-      setLocation(editingSession.location ?? '');
-      setNotes(editingSession.notes ?? '');
-      if (editingSession.date) {
-        const parsed = parseDate(editingSession.date);
-        if (parsed) setDatePickerDate(parsed);
-      }
-      if (editingSession.startTime) {
-        const parsed = parseTime(editingSession.startTime);
-        if (parsed) setStartTimeDate(parsed);
-      }
-      if (editingSession.endTime) {
-        const parsed = parseTime(editingSession.endTime);
-        if (parsed) setEndTimeDate(parsed);
-      }
-    }
+    if (!editingSession) return;
+
+    setSubject(editingSession.subject);
+    setTopic(editingSession.topic);
+    setDate(editingSession.date);
+    setStartTime(editingSession.startTime);
+    setEndTime(editingSession.endTime);
+    setPriority(editingSession.priority);
+    setLocation(editingSession.location ?? '');
+    setNotes(editingSession.notes ?? '');
+    setDatePickerDate(getInitialDate(editingSession.date));
+    setStartTimeDate(getInitialTime(editingSession.startTime, '09:00'));
+    setEndTimeDate(getInitialTime(editingSession.endTime, '10:30'));
   }, [editingSession]);
 
   const handleSave = async () => {
@@ -161,7 +85,7 @@ export default function NewSessionScreen() {
       return;
     }
 
-    const sessionData = {
+    const sessionData: Omit<Session, 'id'> = {
       subject,
       topic: topic || subject,
       date,
@@ -180,246 +104,121 @@ export default function NewSessionScreen() {
     navigation.goBack();
   };
 
+  const title = editingSession ? 'Editar Sesión' : 'Nueva Sesión de Estudio';
+  const subtitle = editingSession
+    ? 'Modifica los detalles de tu sesión.'
+    : 'Organiza tu tiempo para alcanzar el máximo rendimiento.';
+
   return (
-    <SafeAreaView style={s.container} edges={['bottom', 'left', 'right']}>
-      <ScrollView
-        contentContainerStyle={s.scroll}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={s.header}>
-          <Text style={s.title}>
-            {editingSession ? 'Editar Sesión' : 'Nueva Sesión de Estudio'}
-          </Text>
-          <Text style={s.sub}>
-            {editingSession
-              ? 'Modifica los detalles de tu sesión.'
-              : 'Organiza tu tiempo para alcanzar el máximo rendimiento.'}
-          </Text>
+    <FormScaffold title={title} subtitle={subtitle}>
+      <View style={styles.notice}>
+        <MaterialIcons name="info" size={14} color={COLORS.error} />
+        <Text style={styles.noticeText}>
+          Todos los campos con * son obligatorios
+        </Text>
+      </View>
+
+      <OptionChips
+        label="Asignatura *"
+        options={SUBJECTS}
+        selectedValue={subject}
+        onSelect={setSubject}
+      />
+
+      <FormField
+        label="Tema"
+        placeholder="Ej: Cálculo Integral"
+        value={topic}
+        onChangeText={setTopic}
+      />
+
+      <DateTimeField
+        label="Fecha *"
+        value={date}
+        placeholder="Seleccionar fecha"
+        icon="calendar-today"
+        mode="date"
+        pickerValue={datePickerDate}
+        visible={visiblePicker === 'date'}
+        minimumDate={new Date()}
+        onOpen={() => setVisiblePicker('date')}
+        onClose={() => setVisiblePicker(null)}
+        onChange={(selectedDate) => {
+          setDatePickerDate(selectedDate);
+          setDate(formatDate(selectedDate));
+        }}
+      />
+
+      <View style={styles.timeRow}>
+        <View style={styles.timeField}>
+          <DateTimeField
+            label="Inicio *"
+            value={startTime}
+            placeholder="Hora"
+            icon="access-time"
+            mode="time"
+            pickerValue={startTimeDate}
+            visible={visiblePicker === 'startTime'}
+            onOpen={() => setVisiblePicker('startTime')}
+            onClose={() => setVisiblePicker(null)}
+            onChange={(selectedDate) => {
+              setStartTimeDate(selectedDate);
+              setStartTime(formatTime(selectedDate));
+            }}
+          />
         </View>
-
-        <View style={s.form}>
-          <View style={s.notice}>
-            <MaterialIcons name="info" size={14} color={COLORS.error} />
-            <Text style={s.noticeTxt}>
-              Todos los campos con * son obligatorios
-            </Text>
-          </View>
-
-          <Text style={s.label}>Asignatura *</Text>
-          <View style={s.pickerWrap}>
-            {SUBJECTS.map((sub) => (
-              <TouchableOpacity
-                key={sub}
-                style={[s.pickerItem, subject === sub && s.pickerItemOn]}
-                onPress={() => setSubject(sub)}
-              >
-                <Text style={[s.pickerTxt, subject === sub && s.pickerTxtOn]}>
-                  {sub}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={s.label}>Tema</Text>
-          <TextInput
-            style={s.input}
-            placeholder="Ej: Cálculo Integral"
-            placeholderTextColor={COLORS.outline}
-            value={topic}
-            onChangeText={setTopic}
+        <View style={styles.timeGap} />
+        <View style={styles.timeField}>
+          <DateTimeField
+            label="Fin *"
+            value={endTime}
+            placeholder="Hora"
+            icon="access-time"
+            mode="time"
+            pickerValue={endTimeDate}
+            visible={visiblePicker === 'endTime'}
+            onOpen={() => setVisiblePicker('endTime')}
+            onClose={() => setVisiblePicker(null)}
+            onChange={(selectedDate) => {
+              setEndTimeDate(selectedDate);
+              setEndTime(formatTime(selectedDate));
+            }}
           />
-
-          <Text style={s.label}>Fecha *</Text>
-          <TouchableOpacity
-            style={s.dateBtn}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <MaterialIcons
-              name="calendar-today"
-              size={18}
-              color={date ? COLORS.primary : COLORS.outline}
-            />
-            <Text style={[s.dateBtnText, date && s.dateBtnTextFilled]}>
-              {date || 'Seleccionar fecha'}
-            </Text>
-          </TouchableOpacity>
-
-          {showDatePicker && (
-            <DateTimePicker
-              value={datePickerDate}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              minimumDate={new Date()}
-              onChange={(_, selectedDate) => {
-                setShowDatePicker(Platform.OS === 'ios');
-                if (selectedDate) {
-                  setDatePickerDate(selectedDate);
-                  setDate(formatDate(selectedDate));
-                }
-              }}
-            />
-          )}
-
-          <View style={s.timeRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={s.label}>Inicio *</Text>
-              <TouchableOpacity
-                style={s.dateBtn}
-                onPress={() => setShowStartTimePicker(true)}
-              >
-                <MaterialIcons
-                  name="access-time"
-                  size={18}
-                  color={startTime ? COLORS.primary : COLORS.outline}
-                />
-                <Text style={[s.dateBtnText, startTime && s.dateBtnTextFilled]}>
-                  {startTime || 'Hora'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ width: 12 }} />
-            <View style={{ flex: 1 }}>
-              <Text style={s.label}>Fin *</Text>
-              <TouchableOpacity
-                style={s.dateBtn}
-                onPress={() => setShowEndTimePicker(true)}
-              >
-                <MaterialIcons
-                  name="access-time"
-                  size={18}
-                  color={endTime ? COLORS.primary : COLORS.outline}
-                />
-                <Text style={[s.dateBtnText, endTime && s.dateBtnTextFilled]}>
-                  {endTime || 'Hora'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {showStartTimePicker && (
-            <DateTimePicker
-              value={startTimeDate}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(_, selectedDate) => {
-                setShowStartTimePicker(Platform.OS === 'ios');
-                if (selectedDate) {
-                  setStartTimeDate(selectedDate);
-                  setStartTime(formatTime(selectedDate));
-                }
-              }}
-            />
-          )}
-
-          {showEndTimePicker && (
-            <DateTimePicker
-              value={endTimeDate}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(_, selectedDate) => {
-                setShowEndTimePicker(Platform.OS === 'ios');
-                if (selectedDate) {
-                  setEndTimeDate(selectedDate);
-                  setEndTime(formatTime(selectedDate));
-                }
-              }}
-            />
-          )}
-
-          <Text style={s.label}>Ubicación</Text>
-          <TextInput
-            style={s.input}
-            placeholder="Ej: Aula 402, Biblioteca..."
-            placeholderTextColor={COLORS.outline}
-            value={location}
-            onChangeText={setLocation}
-          />
-
-          <Text style={s.label}>Prioridad *</Text>
-          <View style={s.prioRow}>
-            {PRIORITIES.map((p) => (
-              <TouchableOpacity
-                key={p.value}
-                style={[
-                  s.prioBtn,
-                  priority === p.value && {
-                    backgroundColor: p.activeBg,
-                    borderColor: p.border,
-                    borderWidth: 2,
-                  },
-                ]}
-                onPress={() => setPriority(p.value)}
-              >
-                <View style={[s.prioDot, { backgroundColor: p.dot }]} />
-                <Text
-                  style={[
-                    s.prioTxt,
-                    priority === p.value && { color: p.border },
-                  ]}
-                >
-                  {p.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={s.label}>Notas adicionales</Text>
-          <TextInput
-            style={[s.input, { height: 100, textAlignVertical: 'top' }]}
-            placeholder="¿Qué temas específicos repasarás?"
-            placeholderTextColor={COLORS.outline}
-            multiline
-            value={notes}
-            onChangeText={setNotes}
-          />
-
-          <TouchableOpacity activeOpacity={0.8} onPress={handleSave}>
-            <LinearGradient
-              colors={[COLORS.primary, COLORS.primaryContainer]}
-              style={s.saveBtn}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <MaterialIcons
-                name="check-circle"
-                size={20}
-                color={COLORS.onPrimary}
-              />
-              <Text style={s.saveTxt}>
-                {editingSession ? 'Actualizar Sesión' : 'Guardar Sesión'}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={s.cancelBtn}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={s.cancelTxt}>Cancelar</Text>
-          </TouchableOpacity>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+
+      <FormField
+        label="Ubicación"
+        placeholder="Ej: Aula 402, Biblioteca..."
+        value={location}
+        onChangeText={setLocation}
+      />
+
+      <PrioritySelector
+        label="Prioridad *"
+        value={priority}
+        onChange={setPriority}
+      />
+
+      <FormField
+        label="Notas adicionales"
+        placeholder="¿Qué temas específicos repasarás?"
+        multiline
+        value={notes}
+        onChangeText={setNotes}
+        inputStyle={styles.notesInput}
+      />
+
+      <FormActions
+        saveLabel={editingSession ? 'Actualizar Sesión' : 'Guardar Sesión'}
+        onSave={handleSave}
+        onCancel={() => navigation.goBack()}
+      />
+    </FormScaffold>
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  scroll: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 },
-  header: { marginBottom: 24 },
-  title: {
-    fontSize: 30,
-    fontWeight: '700',
-    color: COLORS.onBackground,
-    letterSpacing: -0.5,
-  },
-  sub: { fontSize: 14, color: COLORS.onSurfaceVariant, marginTop: 6 },
-  form: {
-    backgroundColor: COLORS.surfaceContainerLowest,
-    borderRadius: RADIUS.xxl,
-    padding: 24,
-    ...SHADOWS.lg,
-  },
+const styles = StyleSheet.create({
   notice: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -432,101 +231,22 @@ const s = StyleSheet.create({
     borderColor: COLORS.error + '20',
     marginBottom: 20,
   },
-  noticeTxt: { fontSize: 12, fontWeight: '600', color: COLORS.error },
-  label: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.onSurface,
-    marginBottom: 8,
-    marginTop: 16,
-    marginLeft: 4,
-  },
-  input: {
-    backgroundColor: COLORS.surfaceContainerLow,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: COLORS.onSurface,
-  },
-  dateBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.surfaceContainerLow,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  dateBtnText: {
-    fontSize: 15,
-    color: COLORS.outline,
-    flex: 1,
-  },
-  dateBtnTextFilled: {
-    color: COLORS.onSurface,
-  },
-  pickerWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pickerItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainerLow,
-  },
-  pickerItemOn: {
-    backgroundColor: COLORS.primaryFixed,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-  },
-  pickerTxt: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.onSurfaceVariant,
-  },
-  pickerTxtOn: { color: COLORS.primary, fontWeight: '700' },
-  timeRow: { flexDirection: 'row' },
-  prioRow: { flexDirection: 'row', gap: 10 },
-  prioBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainer,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  prioDot: { width: 8, height: 8, borderRadius: 4 },
-  prioTxt: {
+  noticeText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    fontWeight: '600',
+    color: COLORS.error,
   },
-  saveBtn: {
+  timeRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: RADIUS.lg,
-    marginTop: 24,
-    ...SHADOWS.primaryGlow,
   },
-  saveTxt: { fontSize: 15, fontWeight: '700', color: COLORS.onPrimary },
-  cancelBtn: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainerHigh,
-    marginTop: 12,
+  timeField: {
+    flex: 1,
   },
-  cancelTxt: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.onSurfaceVariant,
+  timeGap: {
+    width: 12,
+  },
+  notesInput: {
+    height: 100,
+    textAlignVertical: 'top',
   },
 });
