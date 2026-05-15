@@ -1,261 +1,82 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
-  Alert,
-} from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, {
-  Circle,
-  Defs,
-  LinearGradient as SvgGradient,
-  Stop,
-} from 'react-native-svg';
-import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
+import FocusControls from '../components/focus/FocusControls';
+import FocusSessionSelector from '../components/focus/FocusSessionSelector';
+import FocusTimerRing from '../components/focus/FocusTimerRing';
+import PomodoroSummaryCard from '../components/focus/PomodoroSummaryCard';
+import { COLORS } from '../constants/theme';
+import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useSessions } from '../hooks/useSessions';
+import { getTodayDateKey } from '../utils/date';
 
 const DEFAULT_FOCUS_MINUTES = 25;
-const CIRCLE_RADIUS = 120;
-const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export default function FocusZoneScreen() {
   const { sessions } = useSessions();
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayDateKey();
 
   const todaySessions = useMemo(
-    () => sessions.filter((s) => s.date === today),
+    () => sessions.filter((session) => session.date === today),
     [sessions, today],
   );
 
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
-    todaySessions.length > 0 ? todaySessions[0].id : null,
+    todaySessions[0]?.id ?? null,
   );
 
-  const [totalSeconds, setTotalSeconds] = useState(DEFAULT_FOCUS_MINUTES * 60);
-  const [timeLeft, setTimeLeft] = useState(DEFAULT_FOCUS_MINUTES * 60);
-  const [isActive, setIsActive] = useState(false);
-  const [completedPomodoros, setCompletedPomodoros] = useState(0);
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const selectedSession = todaySessions.find(
+    (session) => session.id === selectedSessionId,
+  );
 
-  const selectedSession = todaySessions.find((s) => s.id === selectedSessionId);
+  const timer = usePomodoroTimer({ focusMinutes: DEFAULT_FOCUS_MINUTES });
 
   useEffect(() => {
-    if (todaySessions.length > 0 && !selectedSessionId) {
+    if (todaySessions.length === 0) {
+      setSelectedSessionId(null);
+      return;
+    }
+
+    const selectedStillExists = todaySessions.some(
+      (session) => session.id === selectedSessionId,
+    );
+
+    if (!selectedStillExists) {
       setSelectedSessionId(todaySessions[0].id);
     }
-  }, [todaySessions, selectedSessionId]);
+  }, [selectedSessionId, todaySessions]);
 
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((t) => t - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && isActive) {
-      setIsActive(false);
-      setCompletedPomodoros((p) => p + 1);
-      Alert.alert(
-        '¡Sesión completada!',
-        `Has terminado un pomodoro de ${DEFAULT_FOCUS_MINUTES} minutos.`,
-      );
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isActive, timeLeft]);
+  const showNextSession = () => {
+    if (todaySessions.length === 0) return;
 
-  useEffect(() => {
-    if (isActive) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.15,
-            duration: 1200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 1200,
-            useNativeDriver: true,
-          }),
-        ]),
-      ).start();
-    } else {
-      pulseAnim.setValue(1);
-    }
-  }, [isActive, pulseAnim]);
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const currentIndex = todaySessions.findIndex(
+      (session) => session.id === selectedSessionId,
+    );
+    const nextIndex = (currentIndex + 1) % todaySessions.length;
+    setSelectedSessionId(todaySessions[nextIndex].id);
   };
-
-  const resetTimer = () => {
-    setIsActive(false);
-    setTimeLeft(totalSeconds);
-  };
-
-  const progress = totalSeconds > 0 ? timeLeft / totalSeconds : 1;
-  const strokeDashoffset = CIRCUMFERENCE - CIRCUMFERENCE * progress;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.titleSection}>
         <Text style={styles.title}>Zona de Enfoque</Text>
-
-        {todaySessions.length > 0 ? (
-          <View style={styles.sessionSelector}>
-            <TouchableOpacity
-              style={styles.selectorBtn}
-              onPress={() => {
-                const idx = todaySessions.findIndex(
-                  (s) => s.id === selectedSessionId,
-                );
-                const nextIdx = (idx + 1) % todaySessions.length;
-                setSelectedSessionId(todaySessions[nextIdx].id);
-              }}
-            >
-              <MaterialIcons
-                name="chevron-left"
-                size={20}
-                color={COLORS.primary}
-              />
-              <Text style={styles.selectorText} numberOfLines={1}>
-                {selectedSession
-                  ? `${selectedSession.subject} - ${selectedSession.topic}`
-                  : 'Selecciona sesión'}
-              </Text>
-              <MaterialIcons
-                name="chevron-right"
-                size={20}
-                color={COLORS.primary}
-              />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.noSessionBadge}>
-            <MaterialIcons
-              name="info-outline"
-              size={16}
-              color={COLORS.onSurfaceVariant}
-            />
-            <Text style={styles.noSessionText}>
-              No hay sesiones para hoy
-            </Text>
-          </View>
-        )}
+        <FocusSessionSelector
+          sessions={todaySessions}
+          selectedSession={selectedSession}
+          onNextSession={showNextSession}
+        />
       </View>
 
-      <View style={styles.timerContainer}>
-        <View style={styles.timerGlow} />
-        <Svg
-          width={CIRCLE_RADIUS * 2 + 24}
-          height={CIRCLE_RADIUS * 2 + 24}
-          style={styles.timerSvg}
-        >
-          <Defs>
-            <SvgGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <Stop offset="0%" stopColor="#004ac6" />
-              <Stop offset="100%" stopColor="#2563eb" />
-            </SvgGradient>
-          </Defs>
-          <Circle
-            cx={CIRCLE_RADIUS + 12}
-            cy={CIRCLE_RADIUS + 12}
-            r={CIRCLE_RADIUS}
-            stroke={COLORS.surfaceContainerHigh}
-            strokeWidth={8}
-            fill="transparent"
-          />
-          <Circle
-            cx={CIRCLE_RADIUS + 12}
-            cy={CIRCLE_RADIUS + 12}
-            r={CIRCLE_RADIUS}
-            stroke="url(#timerGrad)"
-            strokeWidth={10}
-            fill="transparent"
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            rotation="-90"
-            origin={`${CIRCLE_RADIUS + 12},${CIRCLE_RADIUS + 12}`}
-          />
-        </Svg>
-        <View style={styles.timerCenter}>
-          <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
-          <Text style={styles.timerLabel}>Minutos</Text>
-        </View>
-      </View>
+      <FocusTimerRing timeLeft={timer.timeLeft} progress={timer.progress} />
 
-      <View style={styles.controls}>
-        <TouchableOpacity style={styles.controlBtn} onPress={resetTimer}>
-          <MaterialIcons
-            name="replay"
-            size={24}
-            color={COLORS.onSurfaceVariant}
-          />
-        </TouchableOpacity>
+      <FocusControls
+        isActive={timer.isActive}
+        onToggle={timer.toggleTimer}
+        onReset={timer.resetTimer}
+        onStop={timer.stopTimer}
+      />
 
-        <TouchableOpacity
-          style={styles.playBtn}
-          activeOpacity={0.8}
-          onPress={() => setIsActive(!isActive)}
-        >
-          <LinearGradient
-            colors={[COLORS.primary, COLORS.primaryContainer]}
-            style={styles.playGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <MaterialIcons
-              name={isActive ? 'pause' : 'play-arrow'}
-              size={40}
-              color={COLORS.white}
-            />
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.controlBtn}
-          onPress={() => {
-            setIsActive(false);
-            setTimeLeft(totalSeconds);
-          }}
-        >
-          <MaterialIcons
-            name="stop"
-            size={24}
-            color={COLORS.onSurfaceVariant}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.breakCard}>
-        <View style={styles.breakLeft}>
-          <View style={styles.breakIcon}>
-            <MaterialIcons
-              name="coffee"
-              size={24}
-              color={COLORS.onSecondaryContainer}
-            />
-          </View>
-          <View>
-            <Text style={styles.breakLabel}>Pomodoros completados</Text>
-            <Text style={styles.breakValue}>{completedPomodoros}</Text>
-          </View>
-        </View>
-        <View style={styles.breakCounter}>
-          <Text style={styles.breakCounterText}>
-            {completedPomodoros}/4
-          </Text>
-        </View>
-      </View>
+      <PomodoroSummaryCard completedPomodoros={timer.completedPomodoros} />
     </SafeAreaView>
   );
 }
@@ -277,145 +98,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.onBackground,
     marginBottom: 16,
-  },
-  sessionSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  selectorBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.surfaceContainer,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: RADIUS.round,
-    maxWidth: 280,
-  },
-  selectorText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.onSurfaceVariant,
-    flex: 1,
-    textAlign: 'center',
-  },
-  noSessionBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.surfaceContainer,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: RADIUS.round,
-  },
-  noSessionText: {
-    fontSize: 13,
-    color: COLORS.onSurfaceVariant,
-  },
-  timerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  timerGlow: {
-    position: 'absolute',
-    width: CIRCLE_RADIUS * 2 + 40,
-    height: CIRCLE_RADIUS * 2 + 40,
-    borderRadius: CIRCLE_RADIUS + 20,
-    backgroundColor: COLORS.primary + '10',
-  },
-  timerSvg: {
-    transform: [{ rotate: '0deg' }],
-  },
-  timerCenter: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  timerText: {
-    fontSize: 56,
-    fontWeight: '800',
-    color: COLORS.onBackground,
-    letterSpacing: -2,
-  },
-  timerLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: COLORS.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    marginTop: 2,
-  },
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 24,
-    marginBottom: 40,
-  },
-  controlBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playBtn: {
-    ...SHADOWS.primaryGlow,
-  },
-  playGradient: {
-    width: 76,
-    height: 76,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  breakCard: {
-    width: '100%',
-    backgroundColor: COLORS.surfaceContainerLow,
-    borderRadius: RADIUS.xxl,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  breakLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  breakIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.secondaryContainer + '50',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  breakLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  breakValue: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: COLORS.onBackground,
-    marginTop: 2,
-  },
-  breakCounter: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: COLORS.outlineVariant,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  breakCounterText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primary,
   },
 });
