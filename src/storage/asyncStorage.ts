@@ -3,6 +3,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const SESSIONS_KEY = '@focusup_sessions';
 const TASKS_KEY = '@focusup_tasks';
 
+let idCounter = 0;
+const generateId = (): string => {
+  const timestamp = Date.now().toString(36);
+  idCounter += 1;
+  return `${timestamp}-${idCounter}-${Math.random().toString(36).slice(2, 7)}`;
+};
+
 export interface Session {
   id: string;
   subject: string;
@@ -11,6 +18,7 @@ export interface Session {
   startTime: string;
   endTime: string;
   priority: string;
+  location?: string;
   notes?: string;
 }
 
@@ -53,7 +61,7 @@ export const addSession = async (session: NewSession): Promise<Session[]> => {
   const sessions = await getSessions();
   const newSession: Session = {
     ...session,
-    id: Date.now().toString(),
+    id: generateId(),
   };
   const updated = [...sessions, newSession];
   await saveSessions(updated);
@@ -63,6 +71,18 @@ export const addSession = async (session: NewSession): Promise<Session[]> => {
 export const deleteSession = async (sessionId: string): Promise<Session[]> => {
   const sessions = await getSessions();
   const updated = sessions.filter((s) => s.id !== sessionId);
+  await saveSessions(updated);
+  return updated;
+};
+
+export const updateSession = async (
+  sessionId: string,
+  updates: Partial<Omit<Session, 'id'>>,
+): Promise<Session[]> => {
+  const sessions = await getSessions();
+  const updated = sessions.map((s) =>
+    s.id === sessionId ? { ...s, ...updates } : s,
+  );
   await saveSessions(updated);
   return updated;
 };
@@ -103,10 +123,29 @@ export const addTask = async (task: NewTask): Promise<Task[]> => {
   const tasks = await getTasks();
   const newTask: Task = {
     ...task,
-    id: Date.now().toString(),
+    id: generateId(),
     completed: false,
   };
   const updated = [...tasks, newTask];
+  await saveTasks(updated);
+  return updated;
+};
+
+export const deleteTask = async (taskId: string): Promise<Task[]> => {
+  const tasks = await getTasks();
+  const updated = tasks.filter((t) => t.id !== taskId);
+  await saveTasks(updated);
+  return updated;
+};
+
+export const updateTask = async (
+  taskId: string,
+  updates: Partial<Omit<Task, 'id'>>,
+): Promise<Task[]> => {
+  const tasks = await getTasks();
+  const updated = tasks.map((t) =>
+    t.id === taskId ? { ...t, ...updates } : t,
+  );
   await saveTasks(updated);
   return updated;
 };
