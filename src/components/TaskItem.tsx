@@ -7,20 +7,25 @@ import type { Task } from '../storage/asyncStorage';
 interface Props {
   task: Task;
   onToggle: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export default function TaskItem({ task, onToggle }: Props) {
+export default function TaskItem({ task, onToggle, onDelete }: Props) {
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={() => onToggle(task.id)}
-      activeOpacity={0.7}
-    >
-      <View style={[styles.checkbox, task.completed && styles.checkboxChecked]}>
-        {task.completed && (
-          <MaterialIcons name="check" size={16} color={COLORS.white} />
-        )}
-      </View>
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.checkboxArea}
+        onPress={() => onToggle(task.id)}
+        activeOpacity={0.7}
+      >
+        <View
+          style={[styles.checkbox, task.completed && styles.checkboxChecked]}
+        >
+          {task.completed && (
+            <MaterialIcons name="check" size={16} color={COLORS.white} />
+          )}
+        </View>
+      </TouchableOpacity>
       <View style={styles.content}>
         <Text
           style={[styles.title, task.completed && styles.titleCompleted]}
@@ -50,7 +55,16 @@ export default function TaskItem({ task, onToggle }: Props) {
           <Text style={styles.priorityText}>Prioridad {task.priority}</Text>
         </View>
       </View>
-    </TouchableOpacity>
+      {onDelete && !task.completed && (
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={() => onDelete(task.id)}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons name="delete-outline" size={20} color={COLORS.error} />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 
@@ -64,6 +78,9 @@ const styles = StyleSheet.create({
     gap: 14,
     borderWidth: 1,
     borderColor: COLORS.outlineVariant + '18',
+  },
+  checkboxArea: {
+    padding: 2,
   },
   checkbox: {
     width: 24,
@@ -113,5 +130,8 @@ const styles = StyleSheet.create({
     color: COLORS.onSurfaceVariant,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
+  },
+  deleteBtn: {
+    padding: 4,
   },
 });
