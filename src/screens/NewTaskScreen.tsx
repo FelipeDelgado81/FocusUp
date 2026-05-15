@@ -9,7 +9,10 @@ import OptionChips from '../components/forms/OptionChips';
 import PrioritySelector from '../components/forms/PrioritySelector';
 import { TASK_CATEGORIES } from '../constants/formOptions';
 import { useTasks } from '../hooks/useTasks';
-import type { RootStackNavigationProp, RootStackParamList } from '../navigation/types';
+import type {
+  RootStackNavigationProp,
+  RootStackParamList,
+} from '../navigation/types';
 import { formatDate } from '../utils/dateTime';
 
 type NuevaTareaRouteProp = RouteProp<RootStackParamList, 'NuevaTarea'>;
@@ -34,7 +37,9 @@ export default function NewTaskScreen() {
   useEffect(() => {
     if (isEditing && existingTask) {
       setTitle(existingTask.title);
-      setDueDate(existingTask.dueDate === 'Sin fecha' ? '' : existingTask.dueDate);
+      setDueDate(
+        existingTask.dueDate === 'Sin fecha' ? '' : existingTask.dueDate,
+      );
       setPriority(existingTask.priority);
       setCategory(existingTask.category);
     }

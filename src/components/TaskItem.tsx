@@ -72,7 +72,11 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }: Props) {
             onPress={() => onDelete(task.id)}
             activeOpacity={0.7}
           >
-            <MaterialIcons name="delete-outline" size={20} color={COLORS.error} />
+            <MaterialIcons
+              name="delete-outline"
+              size={20}
+              color={COLORS.error}
+            />
           </TouchableOpacity>
         </View>
       )}

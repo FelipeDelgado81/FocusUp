@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS, RADIUS } from '../constants/theme';
+import type { NuevaTareaRouteProp } from './types';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import AgendaScreen from '../screens/AgendaScreen';
@@ -108,7 +109,7 @@ export default function AppNavigator() {
         <Stack.Screen
           name="NuevaTarea"
           component={NewTaskScreen}
-          options={({ route }) => ({
+          options={({ route }: { route: NuevaTareaRouteProp }) => ({
             headerShown: true,
             title: route.params?.taskId ? 'Editar Tarea' : 'Nueva Tarea',
             headerStyle: { backgroundColor: COLORS.background },
