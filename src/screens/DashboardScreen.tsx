@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,32 +7,45 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
-import { getSessions } from '../storage/asyncStorage';
-import type { Session } from '../storage/asyncStorage';
+import { useSessions } from '../hooks/useSessions';
+import type { RootStackNavigationProp } from '../navigation/types';
 import SessionCard from '../components/SessionCard';
 import StatCard from '../components/StatCard';
 
-interface Props {
-  navigation: { navigate: (screen: string) => void };
+function getEmptyStateMessage(): { title: string; sub: string } {
+  const hour = new Date().getHours();
+  if (hour < 12) return { title: '¡Buenos días!', sub: 'Empieza tu día con una sesión de estudio' };
+  if (hour < 18) return { title: '¡Buenas tardes!', sub: '¿Listo para tu próxima sesión?' };
+  return { title: '¡Buenas noches!', sub: 'Última oportunidad para estudiar hoy' };
 }
 
-export default function DashboardScreen({ navigation }: Props) {
-  const [sessions, setSessions] = useState<Session[]>([]);
+export default function DashboardScreen() {
+  const navigation = useNavigation<RootStackNavigationProp>();
+  const { sessions, loading } = useSessions();
 
-  useFocusEffect(
-    useCallback(() => {
-      const load = async () => {
-        const data = await getSessions();
-        setSessions(data);
-      };
-      load();
-    }, []),
+  const today = new Date().toISOString().split('T')[0];
+
+  const todayCount = useMemo(
+    () => sessions.filter((s) => s.date === today).length,
+    [sessions, today],
   );
+
+  const totalCount = sessions.length;
+
+  const progress = useMemo(() => {
+    if (todayCount === 0) return 0;
+    const target = 5;
+    return Math.min((todayCount / target) * 100, 100);
+  }, [todayCount]);
+
+  const circumference = 2 * Math.PI * 42;
+  const strokeOffset = circumference * (1 - progress / 100);
+  const emptyState = getEmptyStateMessage();
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -41,85 +54,109 @@ export default function DashboardScreen({ navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.greeting}>
-          <Text style={styles.greetTitle}>¡Hola, Estudiante! 👋</Text>
-          <Text style={styles.greetSub}>
-            ¡Sigue así, estás cerca de tus objetivos!
-          </Text>
+          <Text style={styles.greetTitle}>{emptyState.title}</Text>
+          <Text style={styles.greetSub}>{emptyState.sub}</Text>
         </View>
 
-        <View style={styles.progressCard}>
-          <View style={{ zIndex: 1, flex: 1 }}>
-            <Text style={styles.progressLabel}>Tu progreso hoy</Text>
-            <Text style={styles.progressTitle}>Excelente ritmo</Text>
-            <View style={styles.trendBadge}>
-              <MaterialIcons
-                name="trending-up"
-                size={14}
-                color={COLORS.onSecondaryContainer}
-              />
-              <Text style={styles.trendText}>+15% que ayer</Text>
+        {loading ? (
+          <View style={styles.emptyState}>
+            <MaterialIcons
+              name="hourglass-empty"
+              size={64}
+              color={COLORS.outlineVariant}
+            />
+            <Text style={styles.emptyTitle}>Cargando...</Text>
+          </View>
+        ) : totalCount > 0 ? (
+          <>
+            <View style={styles.progressCard}>
+              <View style={{ zIndex: 1, flex: 1 }}>
+                <Text style={styles.progressLabel}>Tu progreso hoy</Text>
+                <Text style={styles.progressTitle}>
+                  {todayCount} {todayCount === 1 ? 'sesión' : 'sesiones'}
+                </Text>
+                <View style={styles.trendBadge}>
+                  <MaterialIcons
+                    name="event-note"
+                    size={14}
+                    color={COLORS.onSecondaryContainer}
+                  />
+                  <Text style={styles.trendText}>
+                    {totalCount} {totalCount === 1 ? 'sesión total' : 'sesiones totales'}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.ringContainer}>
+                <Svg width={100} height={100}>
+                  <Circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke={COLORS.surfaceVariant}
+                    strokeWidth={7}
+                    fill="transparent"
+                  />
+                  <Circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke={COLORS.primary}
+                    strokeWidth={7}
+                    fill="transparent"
+                    strokeDasharray={`${circumference}`}
+                    strokeDashoffset={`${strokeOffset}`}
+                    strokeLinecap="round"
+                    rotation="-90"
+                    origin="50,50"
+                  />
+                </Svg>
+                <Text style={styles.ringText}>{Math.round(progress)}%</Text>
+              </View>
             </View>
-          </View>
-          <View style={styles.ringContainer}>
-            <Svg width={100} height={100}>
-              <Circle
-                cx="50"
-                cy="50"
-                r="42"
-                stroke={COLORS.surfaceVariant}
-                strokeWidth={7}
-                fill="transparent"
+
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Próximas Sesiones</Text>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.sessionsScroll}
+            >
+              {sessions.map((session) => (
+                <SessionCard key={session.id} session={session} />
+              ))}
+            </ScrollView>
+
+            <View style={styles.statsRow}>
+              <StatCard
+                icon="event-note"
+                iconColor={COLORS.primary}
+                value={totalCount.toString()}
+                label="Sesiones"
               />
-              <Circle
-                cx="50"
-                cy="50"
-                r="42"
-                stroke={COLORS.primary}
-                strokeWidth={7}
-                fill="transparent"
-                strokeDasharray={`${2 * Math.PI * 42}`}
-                strokeDashoffset={`${2 * Math.PI * 42 * 0.35}`}
-                strokeLinecap="round"
-                rotation="-90"
-                origin="50,50"
+              <View style={{ width: 16 }} />
+              <StatCard
+                icon="today"
+                iconColor={COLORS.tertiary}
+                value={todayCount.toString()}
+                label="Hoy"
               />
-            </Svg>
-            <Text style={styles.ringText}>65%</Text>
+            </View>
+          </>
+        ) : (
+          <View style={styles.emptyState}>
+            <MaterialIcons
+              name="event-available"
+              size={64}
+              color={COLORS.outlineVariant}
+            />
+            <Text style={styles.emptyTitle}>No hay sesiones aún</Text>
+            <Text style={styles.emptySub}>
+              Crea tu primera sesión de estudio para empezar
+            </Text>
           </View>
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Próximas Sesiones</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAll}>Ver todo</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sessionsScroll}
-        >
-          {sessions.map((session) => (
-            <SessionCard key={session.id} session={session} />
-          ))}
-        </ScrollView>
-
-        <View style={styles.statsRow}>
-          <StatCard
-            icon="timer"
-            iconColor={COLORS.primary}
-            value="4.5h"
-            label="Tiempo Total"
-          />
-          <View style={{ width: 16 }} />
-          <StatCard
-            icon="local-fire-department"
-            iconColor={COLORS.tertiary}
-            value="12"
-            label="Racha Días"
-          />
-        </View>
+        )}
       </ScrollView>
 
       <TouchableOpacity
@@ -225,11 +262,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.onBackground,
   },
-  seeAll: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
   sessionsScroll: {
     gap: 14,
     paddingBottom: 8,
@@ -250,5 +282,20 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.xl,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    gap: 12,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.onSurface,
+  },
+  emptySub: {
+    fontSize: 14,
+    color: COLORS.onSurfaceVariant,
+    textAlign: 'center',
   },
 });

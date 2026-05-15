@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,23 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
-import { addSession } from '../storage/asyncStorage';
+import { useSessions } from '../hooks/useSessions';
+import type { RootStackNavigationProp, RootStackParamList } from '../navigation/types';
+import type { RouteProp } from '@react-navigation/native';
 
 const SUBJECTS: string[] = [
   'Matemáticas Avanzadas',
   'Historia Universal',
   'Biología Molecular',
   'Literatura Contemporánea',
+  'Programación',
+  'Física',
+  'Química',
+  'Inglés',
 ];
 
 interface PriorityOption {
@@ -53,18 +60,38 @@ const PRIORITIES: PriorityOption[] = [
   },
 ];
 
-interface Props {
-  navigation: { goBack: () => void };
-}
+type NuevaSesionRouteProp = RouteProp<RootStackParamList, 'NuevaSesion'>;
 
-export default function NewSessionScreen({ navigation }: Props) {
-  const [subject, setSubject] = useState('');
-  const [topic, setTopic] = useState('');
-  const [date, setDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [priority, setPriority] = useState('MEDIA');
-  const [notes, setNotes] = useState('');
+export default function NewSessionScreen() {
+  const navigation = useNavigation<RootStackNavigationProp>();
+  const route = useRoute<NuevaSesionRouteProp>();
+  const { sessions, add, update } = useSessions();
+  const editingId = route.params?.sessionId;
+  const editingSession = editingId
+    ? sessions.find((s) => s.id === editingId)
+    : undefined;
+
+  const [subject, setSubject] = useState(editingSession?.subject ?? '');
+  const [topic, setTopic] = useState(editingSession?.topic ?? '');
+  const [date, setDate] = useState(editingSession?.date ?? '');
+  const [startTime, setStartTime] = useState(editingSession?.startTime ?? '');
+  const [endTime, setEndTime] = useState(editingSession?.endTime ?? '');
+  const [priority, setPriority] = useState(editingSession?.priority ?? 'MEDIA');
+  const [location, setLocation] = useState(editingSession?.location ?? '');
+  const [notes, setNotes] = useState(editingSession?.notes ?? '');
+
+  useEffect(() => {
+    if (editingSession) {
+      setSubject(editingSession.subject);
+      setTopic(editingSession.topic);
+      setDate(editingSession.date);
+      setStartTime(editingSession.startTime);
+      setEndTime(editingSession.endTime);
+      setPriority(editingSession.priority);
+      setLocation(editingSession.location ?? '');
+      setNotes(editingSession.notes ?? '');
+    }
+  }, [editingSession]);
 
   const handleSave = async () => {
     if (!subject || !date || !startTime || !endTime) {
@@ -74,15 +101,23 @@ export default function NewSessionScreen({ navigation }: Props) {
       );
       return;
     }
-    await addSession({
+
+    const sessionData = {
       subject,
       topic: topic || subject,
       date,
       startTime,
       endTime,
       priority,
+      location,
       notes,
-    });
+    };
+
+    if (editingId && editingSession) {
+      await update(editingId, sessionData);
+    } else {
+      await add(sessionData);
+    }
     navigation.goBack();
   };
 
@@ -93,9 +128,13 @@ export default function NewSessionScreen({ navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View style={s.header}>
-          <Text style={s.title}>Nueva Sesión de Estudio</Text>
+          <Text style={s.title}>
+            {editingSession ? 'Editar Sesión' : 'Nueva Sesión de Estudio'}
+          </Text>
           <Text style={s.sub}>
-            Organiza tu tiempo para alcanzar el máximo rendimiento.
+            {editingSession
+              ? 'Modifica los detalles de tu sesión.'
+              : 'Organiza tu tiempo para alcanzar el máximo rendimiento.'}
           </Text>
         </View>
 
@@ -164,6 +203,15 @@ export default function NewSessionScreen({ navigation }: Props) {
             </View>
           </View>
 
+          <Text style={s.label}>Ubicación</Text>
+          <TextInput
+            style={s.input}
+            placeholder="Ej: Aula 402, Biblioteca..."
+            placeholderTextColor={COLORS.outline}
+            value={location}
+            onChangeText={setLocation}
+          />
+
           <Text style={s.label}>Prioridad *</Text>
           <View style={s.prioRow}>
             {PRIORITIES.map((p) => (
@@ -214,7 +262,9 @@ export default function NewSessionScreen({ navigation }: Props) {
                 size={20}
                 color={COLORS.onPrimary}
               />
-              <Text style={s.saveTxt}>Guardar Sesión</Text>
+              <Text style={s.saveTxt}>
+                {editingSession ? 'Actualizar Sesión' : 'Guardar Sesión'}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
 

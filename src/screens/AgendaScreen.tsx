@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,19 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
-import { getSessions, deleteSession } from '../storage/asyncStorage';
-import type { Session } from '../storage/asyncStorage';
+import { useSessions } from '../hooks/useSessions';
+import type { RootStackNavigationProp } from '../navigation/types';
 import PriorityBadge from '../components/PriorityBadge';
 
 const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const MONTH_NAMES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
 
 const SUBJECT_ICONS: Record<string, keyof typeof MaterialIcons.glyphMap> = {
   Matemáticas: 'functions',
@@ -37,36 +41,90 @@ const PRIORITY_ICON_COLOR: Record<string, string> = {
   BAJA: COLORS.onTertiaryFixedVariant,
 };
 
-interface Props {
-  navigation: { navigate: (screen: string) => void };
+function getWeekDates(referenceDate: Date): Date[] {
+  const dayOfWeek = referenceDate.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(referenceDate);
+  monday.setDate(referenceDate.getDate() + mondayOffset);
+  monday.setHours(0, 0, 0, 0);
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + i);
+    return date;
+  });
 }
 
-export default function AgendaScreen({ navigation }: Props) {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const selectedDay = 1;
+function formatDateKey(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
 
-  useFocusEffect(
-    useCallback(() => {
-      const load = async () => {
-        const data = await getSessions();
-        setSessions(data);
-      };
-      load();
-    }, []),
+function isSameDay(a: Date, b: Date): boolean {
+  return formatDateKey(a) === formatDateKey(b);
+}
+
+export default function AgendaScreen() {
+  const navigation = useNavigation<RootStackNavigationProp>();
+  const { sessions, loading, refresh, remove } = useSessions();
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const referenceDate = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + weekOffset * 7);
+    return date;
+  }, [weekOffset]);
+
+  const weekDates = useMemo(() => getWeekDates(referenceDate), [referenceDate]);
+
+  const todayIndex = useMemo(() => {
+    const today = new Date();
+    return weekDates.findIndex((d) => isSameDay(d, today));
+  }, [weekDates]);
+
+  const [selectedDayIndex, setSelectedDayIndex] = useState(
+    todayIndex >= 0 ? todayIndex : 0,
   );
 
-  const handleDelete = async (id: string) => {
+  const selectedDate = weekDates[selectedDayIndex];
+  const selectedDateKey = formatDateKey(selectedDate);
+
+  const daySessions = useMemo(
+    () => sessions.filter((s) => s.date === selectedDateKey),
+    [sessions, selectedDateKey],
+  );
+
+  const monthLabel = `${MONTH_NAMES[referenceDate.getMonth()]} ${referenceDate.getFullYear()}`;
+
+  const handleDelete = (id: string) => {
     Alert.alert('Eliminar sesión', '¿Estás seguro?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
         style: 'destructive',
-        onPress: async () => {
-          const updated = await deleteSession(id);
-          setSessions(updated);
-        },
+        onPress: () => remove(id),
       },
     ]);
+  };
+
+  const handleEdit = (sessionId: string) => {
+    navigation.navigate('NuevaSesion', { sessionId });
+  };
+
+  const goToPrevWeek = () => {
+    setWeekOffset((prev) => prev - 1);
+    setSelectedDayIndex(0);
+  };
+
+  const goToNextWeek = () => {
+    setWeekOffset((prev) => prev + 1);
+    setSelectedDayIndex(0);
+  };
+
+  const goToToday = () => {
+    setWeekOffset(0);
+    const today = new Date();
+    const idx = weekDates.findIndex((d) => isSameDay(d, today));
+    setSelectedDayIndex(idx >= 0 ? idx : 0);
   };
 
   return (
@@ -78,22 +136,25 @@ export default function AgendaScreen({ navigation }: Props) {
         <View style={styles.header}>
           <Text style={styles.title}>Mi Agenda de Estudio</Text>
           <Text style={styles.subtitle}>
-            Organiza tu flujo de aprendizaje para hoy
+            Organiza tu flujo de aprendizaje
           </Text>
         </View>
 
         <View style={styles.calendarCard}>
           <View style={styles.calendarHeader}>
-            <Text style={styles.monthLabel}>Octubre 2023</Text>
+            <Text style={styles.monthLabel}>{monthLabel}</Text>
             <View style={styles.calendarNav}>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={goToPrevWeek}>
                 <MaterialIcons
                   name="chevron-left"
                   size={24}
                   color={COLORS.primary}
                 />
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={goToToday}>
+                <Text style={styles.todayBtn}>Hoy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={goToNextWeek}>
                 <MaterialIcons
                   name="chevron-right"
                   size={24}
@@ -103,12 +164,17 @@ export default function AgendaScreen({ navigation }: Props) {
             </View>
           </View>
           <View style={styles.daysRow}>
-            {DAYS.map((day, i) => {
-              const isSelected = i === selectedDay;
+            {weekDates.map((date, i) => {
+              const isSelected = i === selectedDayIndex;
+              const isToday = isSameDay(date, new Date());
               return (
                 <TouchableOpacity
-                  key={day}
-                  style={[styles.dayCell, isSelected && styles.dayCellSelected]}
+                  key={i}
+                  style={[
+                    styles.dayCell,
+                    isSelected && styles.dayCellSelected,
+                  ]}
+                  onPress={() => setSelectedDayIndex(i)}
                 >
                   <Text
                     style={[
@@ -116,17 +182,25 @@ export default function AgendaScreen({ navigation }: Props) {
                       isSelected && styles.dayLabelSelected,
                     ]}
                   >
-                    {day}
+                    {DAYS[i]}
                   </Text>
                   <Text
                     style={[
                       styles.dayNumber,
                       isSelected && styles.dayNumberSelected,
+                      isToday && !isSelected && styles.dayNumberToday,
                     ]}
                   >
-                    {16 + i}
+                    {date.getDate()}
                   </Text>
-                  {isSelected && <View style={styles.dayDot} />}
+                  {(isSelected || isToday) && (
+                    <View
+                      style={[
+                        styles.dayDot,
+                        isToday && !isSelected && styles.dayDotToday,
+                      ]}
+                    />
+                  )}
                 </TouchableOpacity>
               );
             })}
@@ -134,93 +208,104 @@ export default function AgendaScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.sessionsHeader}>
-          <Text style={styles.sessionsLabel}>Próximas Sesiones</Text>
+          <Text style={styles.sessionsLabel}>Sesiones del día</Text>
           <Text style={styles.sessionsCount}>
-            {sessions.length} sesiones hoy
+            {daySessions.length} {daySessions.length === 1 ? 'sesión' : 'sesiones'}
           </Text>
         </View>
 
-        {sessions.map((session) => (
-          <View key={session.id} style={styles.sessionCard}>
-            <View style={styles.sessionTop}>
-              <View style={styles.sessionInfo}>
-                <View
-                  style={[
-                    styles.sessionIcon,
-                    {
-                      backgroundColor:
-                        PRIORITY_ICON_BG[session.priority] ||
-                        COLORS.primaryFixed,
-                    },
-                  ]}
-                >
-                  <MaterialIcons
-                    name={
-                      SUBJECT_ICONS[session.subject] || SUBJECT_ICONS.default
-                    }
-                    size={22}
-                    color={
-                      PRIORITY_ICON_COLOR[session.priority] || COLORS.onSurface
-                    }
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sessionTitle}>
-                    {session.subject} {session.topic}
-                  </Text>
-                  <View style={styles.sessionTime}>
+        {daySessions.length > 0 ? (
+          daySessions.map((session) => (
+            <View key={session.id} style={styles.sessionCard}>
+              <View style={styles.sessionTop}>
+                <View style={styles.sessionInfo}>
+                  <View
+                    style={[
+                      styles.sessionIcon,
+                      {
+                        backgroundColor:
+                          PRIORITY_ICON_BG[session.priority] ||
+                          COLORS.primaryFixed,
+                      },
+                    ]}
+                  >
                     <MaterialIcons
-                      name="schedule"
-                      size={14}
-                      color={COLORS.onSurfaceVariant}
+                      name={
+                        SUBJECT_ICONS[session.subject] || SUBJECT_ICONS.default
+                      }
+                      size={22}
+                      color={
+                        PRIORITY_ICON_COLOR[session.priority] || COLORS.onSurface
+                      }
                     />
-                    <Text style={styles.sessionTimeText}>
-                      {session.startTime} - {session.endTime}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.sessionTitle}>
+                      {session.subject} {session.topic}
                     </Text>
+                    <View style={styles.sessionTime}>
+                      <MaterialIcons
+                        name="schedule"
+                        size={14}
+                        color={COLORS.onSurfaceVariant}
+                      />
+                      <Text style={styles.sessionTimeText}>
+                        {session.startTime} - {session.endTime}
+                      </Text>
+                    </View>
+                    {session.location && (
+                      <View style={styles.locationRow}>
+                        <MaterialIcons
+                          name="place"
+                          size={14}
+                          color={COLORS.onSurfaceVariant}
+                        />
+                        <Text style={styles.locationText}>{session.location}</Text>
+                      </View>
+                    )}
                   </View>
                 </View>
+                <PriorityBadge priority={session.priority as 'ALTA' | 'MEDIA' | 'BAJA'} />
               </View>
-              <PriorityBadge priority={session.priority as 'ALTA' | 'MEDIA' | 'BAJA'} />
-            </View>
-            <View style={styles.sessionBottom}>
-              <View style={styles.locationRow}>
-                <View
-                  style={[
-                    styles.locationDot,
-                    {
-                      backgroundColor:
-                        session.priority === 'ALTA'
-                          ? COLORS.primary
-                          : session.priority === 'MEDIA'
-                            ? COLORS.secondary
-                            : COLORS.tertiary,
-                    },
-                  ]}
-                />
-                <Text style={styles.locationText}>Aula 402</Text>
-              </View>
-              <View style={styles.actionButtons}>
-                <TouchableOpacity style={styles.actionBtn}>
-                  <MaterialIcons
-                    name="edit"
-                    size={18}
-                    color={COLORS.onSurfaceVariant}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionBtn}
-                  onPress={() => handleDelete(session.id)}
-                >
-                  <MaterialIcons
-                    name="delete"
-                    size={18}
-                    color={COLORS.onSurfaceVariant}
-                  />
-                </TouchableOpacity>
+              <View style={styles.sessionBottom}>
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => handleEdit(session.id)}
+                  >
+                    <MaterialIcons
+                      name="edit"
+                      size={18}
+                      color={COLORS.onSurfaceVariant}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => handleDelete(session.id)}
+                  >
+                    <MaterialIcons
+                      name="delete"
+                      size={18}
+                      color={COLORS.error}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <MaterialIcons
+              name="event-available"
+              size={48}
+              color={COLORS.outlineVariant}
+            />
+            <Text style={styles.emptyTitle}>Sin sesiones</Text>
+            <Text style={styles.emptySub}>
+              No hay sesiones programadas para este día
+            </Text>
           </View>
-        ))}
+        )}
       </ScrollView>
 
       <TouchableOpacity
@@ -286,7 +371,13 @@ const styles = StyleSheet.create({
   },
   calendarNav: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    gap: 12,
+  },
+  todayBtn: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   daysRow: {
     flexDirection: 'row',
@@ -321,11 +412,18 @@ const styles = StyleSheet.create({
     color: COLORS.onPrimary,
     fontWeight: '700',
   },
+  dayNumberToday: {
+    color: COLORS.primary,
+    fontWeight: '700',
+  },
   dayDot: {
     width: 4,
     height: 4,
     borderRadius: 2,
     backgroundColor: COLORS.white,
+  },
+  dayDotToday: {
+    backgroundColor: COLORS.primary,
   },
   sessionsHeader: {
     flexDirection: 'row',
@@ -389,26 +487,23 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: COLORS.onSurfaceVariant,
   },
-  sessionBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 12,
-  },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  locationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    gap: 6,
+    marginTop: 4,
   },
   locationText: {
     fontSize: 12,
     fontWeight: '500',
     color: COLORS.onSurfaceVariant,
+  },
+  sessionBottom: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.surfaceContainer + '20',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -434,5 +529,20 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.xl,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    gap: 8,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.onSurface,
+  },
+  emptySub: {
+    fontSize: 13,
+    color: COLORS.onSurfaceVariant,
+    textAlign: 'center',
   },
 });
