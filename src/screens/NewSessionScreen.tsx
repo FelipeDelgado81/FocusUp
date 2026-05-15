@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 import { useSessions } from '../hooks/useSessions';
 import type { RootStackNavigationProp, RootStackParamList } from '../navigation/types';
@@ -62,6 +64,37 @@ const PRIORITIES: PriorityOption[] = [
 
 type NuevaSesionRouteProp = RouteProp<RootStackParamList, 'NuevaSesion'>;
 
+function formatDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
+function parseDate(str: string): Date | null {
+  const parts = str.split('-');
+  if (parts.length !== 3) return null;
+  const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function parseTime(str: string): Date | null {
+  const clean = str.replace(/\s*(AM|PM)/i, '').trim();
+  const parts = clean.split(':');
+  if (parts.length < 2) return null;
+  const d = new Date();
+  d.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 export default function NewSessionScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
   const route = useRoute<NuevaSesionRouteProp>();
@@ -80,6 +113,20 @@ export default function NewSessionScreen() {
   const [location, setLocation] = useState(editingSession?.location ?? '');
   const [notes, setNotes] = useState(editingSession?.notes ?? '');
 
+  const [datePickerDate, setDatePickerDate] = useState<Date>(
+    parseDate(editingSession?.date ?? '') ?? new Date(),
+  );
+  const [startTimeDate, setStartTimeDate] = useState<Date>(
+    parseTime(editingSession?.startTime ?? '09:00') ?? new Date(),
+  );
+  const [endTimeDate, setEndTimeDate] = useState<Date>(
+    parseTime(editingSession?.endTime ?? '10:30') ?? new Date(),
+  );
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
   useEffect(() => {
     if (editingSession) {
       setSubject(editingSession.subject);
@@ -90,6 +137,18 @@ export default function NewSessionScreen() {
       setPriority(editingSession.priority);
       setLocation(editingSession.location ?? '');
       setNotes(editingSession.notes ?? '');
+      if (editingSession.date) {
+        const parsed = parseDate(editingSession.date);
+        if (parsed) setDatePickerDate(parsed);
+      }
+      if (editingSession.startTime) {
+        const parsed = parseTime(editingSession.startTime);
+        if (parsed) setStartTimeDate(parsed);
+      }
+      if (editingSession.endTime) {
+        const parsed = parseTime(editingSession.endTime);
+        if (parsed) setEndTimeDate(parsed);
+      }
     }
   }, [editingSession]);
 
@@ -171,37 +230,101 @@ export default function NewSessionScreen() {
           />
 
           <Text style={s.label}>Fecha *</Text>
-          <TextInput
-            style={s.input}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={COLORS.outline}
-            value={date}
-            onChangeText={setDate}
-          />
+          <TouchableOpacity
+            style={s.dateBtn}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <MaterialIcons
+              name="calendar-today"
+              size={18}
+              color={date ? COLORS.primary : COLORS.outline}
+            />
+            <Text style={[s.dateBtnText, date && s.dateBtnTextFilled]}>
+              {date || 'Seleccionar fecha'}
+            </Text>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={datePickerDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              minimumDate={new Date()}
+              onChange={(_, selectedDate) => {
+                setShowDatePicker(Platform.OS === 'ios');
+                if (selectedDate) {
+                  setDatePickerDate(selectedDate);
+                  setDate(formatDate(selectedDate));
+                }
+              }}
+            />
+          )}
 
           <View style={s.timeRow}>
             <View style={{ flex: 1 }}>
               <Text style={s.label}>Inicio *</Text>
-              <TextInput
-                style={s.input}
-                placeholder="10:00 AM"
-                placeholderTextColor={COLORS.outline}
-                value={startTime}
-                onChangeText={setStartTime}
-              />
+              <TouchableOpacity
+                style={s.dateBtn}
+                onPress={() => setShowStartTimePicker(true)}
+              >
+                <MaterialIcons
+                  name="access-time"
+                  size={18}
+                  color={startTime ? COLORS.primary : COLORS.outline}
+                />
+                <Text style={[s.dateBtnText, startTime && s.dateBtnTextFilled]}>
+                  {startTime || 'Hora'}
+                </Text>
+              </TouchableOpacity>
             </View>
             <View style={{ width: 12 }} />
             <View style={{ flex: 1 }}>
               <Text style={s.label}>Fin *</Text>
-              <TextInput
-                style={s.input}
-                placeholder="11:30 AM"
-                placeholderTextColor={COLORS.outline}
-                value={endTime}
-                onChangeText={setEndTime}
-              />
+              <TouchableOpacity
+                style={s.dateBtn}
+                onPress={() => setShowEndTimePicker(true)}
+              >
+                <MaterialIcons
+                  name="access-time"
+                  size={18}
+                  color={endTime ? COLORS.primary : COLORS.outline}
+                />
+                <Text style={[s.dateBtnText, endTime && s.dateBtnTextFilled]}>
+                  {endTime || 'Hora'}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
+
+          {showStartTimePicker && (
+            <DateTimePicker
+              value={startTimeDate}
+              mode="time"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(_, selectedDate) => {
+                setShowStartTimePicker(Platform.OS === 'ios');
+                if (selectedDate) {
+                  setStartTimeDate(selectedDate);
+                  setStartTime(formatTime(selectedDate));
+                }
+              }}
+            />
+          )}
+
+          {showEndTimePicker && (
+            <DateTimePicker
+              value={endTimeDate}
+              mode="time"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(_, selectedDate) => {
+                setShowEndTimePicker(Platform.OS === 'ios');
+                if (selectedDate) {
+                  setEndTimeDate(selectedDate);
+                  setEndTime(formatTime(selectedDate));
+                }
+              }}
+            />
+          )}
 
           <Text style={s.label}>Ubicación</Text>
           <TextInput
@@ -324,6 +447,23 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15,
+    color: COLORS.onSurface,
+  },
+  dateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.surfaceContainerLow,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  dateBtnText: {
+    fontSize: 15,
+    color: COLORS.outline,
+    flex: 1,
+  },
+  dateBtnTextFilled: {
     color: COLORS.onSurface,
   },
   pickerWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

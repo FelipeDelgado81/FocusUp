@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 import { useTasks } from '../hooks/useTasks';
 import type { RootStackNavigationProp } from '../navigation/types';
@@ -57,6 +59,13 @@ const PRIORITIES: PriorityOption[] = [
   },
 ];
 
+function formatDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export default function NewTaskScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
   const { add } = useTasks();
@@ -64,6 +73,8 @@ export default function NewTaskScreen() {
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('MEDIA');
   const [category, setCategory] = useState(CATEGORIES[0]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pickerDate, setPickerDate] = useState(new Date());
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -102,13 +113,35 @@ export default function NewTaskScreen() {
           />
 
           <Text style={s.label}>Fecha límite</Text>
-          <TextInput
-            style={s.input}
-            placeholder="YYYY-MM-DD o 'Sin fecha'"
-            placeholderTextColor={COLORS.outline}
-            value={dueDate}
-            onChangeText={setDueDate}
-          />
+          <TouchableOpacity
+            style={s.dateBtn}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <MaterialIcons
+              name="calendar-today"
+              size={18}
+              color={dueDate ? COLORS.primary : COLORS.outline}
+            />
+            <Text style={[s.dateBtnText, dueDate && s.dateBtnTextFilled]}>
+              {dueDate || 'Seleccionar fecha'}
+            </Text>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={pickerDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              minimumDate={new Date()}
+              onChange={(_, selectedDate) => {
+                setShowDatePicker(Platform.OS === 'ios');
+                if (selectedDate) {
+                  setPickerDate(selectedDate);
+                  setDueDate(formatDate(selectedDate));
+                }
+              }}
+            />
+          )}
 
           <Text style={s.label}>Categoría</Text>
           <View style={s.pickerWrap}>
@@ -212,6 +245,23 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15,
+    color: COLORS.onSurface,
+  },
+  dateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.surfaceContainerLow,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  dateBtnText: {
+    fontSize: 15,
+    color: COLORS.outline,
+    flex: 1,
+  },
+  dateBtnTextFilled: {
     color: COLORS.onSurface,
   },
   pickerWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
