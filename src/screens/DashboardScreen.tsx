@@ -58,6 +58,8 @@ export default function DashboardScreen() {
             icon="event-available"
             title="No hay sesiones aún"
             subtitle="Crea tu primera sesión de estudio para empezar"
+            actionLabel="Crear mi primera sesión"
+            onAction={() => navigation.navigate('NuevaSesion')}
           />
         )}
       </ScrollView>
