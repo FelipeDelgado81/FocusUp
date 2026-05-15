@@ -194,7 +194,7 @@ const s = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1.5,
   },
-  fab: { position: 'absolute', right: 20, bottom: 24, ...SHADOWS.primaryGlow },
+  fab: { position: 'absolute', right: 20, bottom: 86, ...SHADOWS.primaryGlow },
   fabG: {
     width: 56,
     height: 56,
