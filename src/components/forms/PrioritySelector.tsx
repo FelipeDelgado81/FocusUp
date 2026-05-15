@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     backgroundColor: COLORS.surfaceContainer,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: COLORS.transparent,
   },
   priorityDot: {
     width: 8,

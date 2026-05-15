@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  type RouteProp,
+} from '@react-navigation/native';
 import DateTimeField from '../components/forms/DateTimeField';
 import FormActions from '../components/forms/FormActions';
 import FormField from '../components/forms/FormField';
@@ -15,7 +19,13 @@ import type {
   RootStackNavigationProp,
   RootStackParamList,
 } from '../navigation/types';
-import { formatDate, formatTime, parseDate, parseTime } from '../utils/dateTime';
+import {
+  formatDate,
+  formatTime,
+  isTimeRangeValid,
+  parseDate,
+  parseTime,
+} from '../utils/dateTime';
 
 type NuevaSesionRouteProp = RouteProp<RootStackParamList, 'NuevaSesion'>;
 
@@ -30,7 +40,7 @@ function getInitialTime(value: string | undefined, fallback: string): Date {
 export default function NewSessionScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
   const route = useRoute<NuevaSesionRouteProp>();
-  const { sessions, add, update } = useSessions();
+  const { sessions, add, update, loading } = useSessions();
 
   const editingId = route.params?.sessionId;
   const editingSession = editingId
@@ -76,8 +86,21 @@ export default function NewSessionScreen() {
     setEndTimeDate(getInitialTime(editingSession.endTime, '10:30'));
   }, [editingSession]);
 
+  useEffect(() => {
+    if (!editingId || loading || editingSession) return;
+
+    Alert.alert(
+      'Sesión no encontrada',
+      'No pudimos cargar la sesión que intentas editar.',
+      [{ text: 'Volver', onPress: () => navigation.goBack() }],
+    );
+  }, [editingId, editingSession, loading, navigation]);
+
   const handleSave = async () => {
-    if (!subject || !date || !startTime || !endTime) {
+    const trimmedSubject = subject.trim();
+    const trimmedTopic = topic.trim();
+
+    if (!trimmedSubject || !date || !startTime || !endTime) {
       Alert.alert(
         'Campos requeridos',
         'Por favor completa los campos obligatorios.',
@@ -85,15 +108,31 @@ export default function NewSessionScreen() {
       return;
     }
 
+    if (!isTimeRangeValid(startTime, endTime)) {
+      Alert.alert(
+        'Horario inválido',
+        'La hora de fin debe ser posterior a la hora de inicio.',
+      );
+      return;
+    }
+
+    if (editingId && !editingSession) {
+      Alert.alert(
+        'Espera un momento',
+        'Todavía estamos cargando los datos de esta sesión.',
+      );
+      return;
+    }
+
     const sessionData: Omit<Session, 'id'> = {
-      subject,
-      topic: topic || subject,
+      subject: trimmedSubject,
+      topic: trimmedTopic || trimmedSubject,
       date,
       startTime,
       endTime,
       priority,
-      location,
-      notes,
+      location: location.trim(),
+      notes: notes.trim(),
     };
 
     if (editingId && editingSession) {
@@ -108,6 +147,28 @@ export default function NewSessionScreen() {
   const subtitle = editingSession
     ? 'Modifica los detalles de tu sesión.'
     : 'Organiza tu tiempo para alcanzar el máximo rendimiento.';
+
+  if (editingId && loading) {
+    return (
+      <FormScaffold
+        title="Cargando sesión"
+        subtitle="Estamos preparando los datos para editar."
+      >
+        <Text style={styles.feedbackText}>Cargando...</Text>
+      </FormScaffold>
+    );
+  }
+
+  if (editingId && !editingSession) {
+    return (
+      <FormScaffold
+        title="Sesión no encontrada"
+        subtitle="Vuelve a la agenda e intenta nuevamente."
+      >
+        <Text style={styles.feedbackText}>No hay datos para editar.</Text>
+      </FormScaffold>
+    );
+  }
 
   return (
     <FormScaffold title={title} subtitle={subtitle}>
@@ -248,5 +309,11 @@ const styles = StyleSheet.create({
   notesInput: {
     height: 100,
     textAlignVertical: 'top',
+  },
+  feedbackText: {
+    color: COLORS.onSurfaceVariant,
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

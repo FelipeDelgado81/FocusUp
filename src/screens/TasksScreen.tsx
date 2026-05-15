@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   View,
   Text,
   ScrollView,
@@ -11,11 +12,12 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
+import { TASK_CATEGORIES } from '../constants/formOptions';
 import { useTasks } from '../hooks/useTasks';
 import type { RootStackNavigationProp } from '../navigation/types';
 import TaskItem from '../components/TaskItem';
 
-const CATEGORIES: string[] = ['Todas', 'Historia', 'Matemáticas', 'Ciencias', 'Arte', 'Programación', 'Idiomas'];
+const CATEGORIES: string[] = ['Todas', ...TASK_CATEGORIES];
 
 export default function TasksScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
@@ -28,7 +30,14 @@ export default function TasksScreen() {
   };
 
   const handleDelete = (id: string) => {
-    remove(id);
+    Alert.alert('Eliminar tarea', '¿Estás seguro?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: () => remove(id),
+      },
+    ]);
   };
 
   const filtered = tasks.filter((t) => {
