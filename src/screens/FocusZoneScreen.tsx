@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Animated,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -16,15 +17,38 @@ import Svg, {
   Stop,
 } from 'react-native-svg';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
+import { useSessions } from '../hooks/useSessions';
 
-const TOTAL_SECONDS = 25 * 60;
+const DEFAULT_FOCUS_MINUTES = 25;
 const CIRCLE_RADIUS = 120;
 const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 export default function FocusZoneScreen() {
-  const [timeLeft, setTimeLeft] = useState<number>(TOTAL_SECONDS);
-  const [isActive, setIsActive] = useState<boolean>(false);
+  const { sessions } = useSessions();
+  const today = new Date().toISOString().split('T')[0];
+
+  const todaySessions = useMemo(
+    () => sessions.filter((s) => s.date === today),
+    [sessions, today],
+  );
+
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    todaySessions.length > 0 ? todaySessions[0].id : null,
+  );
+
+  const [totalSeconds, setTotalSeconds] = useState(DEFAULT_FOCUS_MINUTES * 60);
+  const [timeLeft, setTimeLeft] = useState(DEFAULT_FOCUS_MINUTES * 60);
+  const [isActive, setIsActive] = useState(false);
+  const [completedPomodoros, setCompletedPomodoros] = useState(0);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const selectedSession = todaySessions.find((s) => s.id === selectedSessionId);
+
+  useEffect(() => {
+    if (todaySessions.length > 0 && !selectedSessionId) {
+      setSelectedSessionId(todaySessions[0].id);
+    }
+  }, [todaySessions, selectedSessionId]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -32,8 +56,13 @@ export default function FocusZoneScreen() {
       interval = setInterval(() => {
         setTimeLeft((t) => t - 1);
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && isActive) {
       setIsActive(false);
+      setCompletedPomodoros((p) => p + 1);
+      Alert.alert(
+        '¡Sesión completada!',
+        `Has terminado un pomodoro de ${DEFAULT_FOCUS_MINUTES} minutos.`,
+      );
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -59,7 +88,7 @@ export default function FocusZoneScreen() {
     } else {
       pulseAnim.setValue(1);
     }
-  }, [isActive]);
+  }, [isActive, pulseAnim]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -69,27 +98,58 @@ export default function FocusZoneScreen() {
 
   const resetTimer = () => {
     setIsActive(false);
-    setTimeLeft(TOTAL_SECONDS);
+    setTimeLeft(totalSeconds);
   };
 
-  const progress = timeLeft / TOTAL_SECONDS;
+  const progress = totalSeconds > 0 ? timeLeft / totalSeconds : 1;
   const strokeDashoffset = CIRCUMFERENCE - CIRCUMFERENCE * progress;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.titleSection}>
         <Text style={styles.title}>Zona de Enfoque</Text>
-        <View style={styles.studyingBadge}>
-          <Animated.View
-            style={[
-              styles.pulseDot,
-              { transform: [{ scale: isActive ? pulseAnim : 1 }] },
-            ]}
-          />
-          <Text style={styles.studyingText}>
-            Estudiando: Diseño de Interfaces
-          </Text>
-        </View>
+
+        {todaySessions.length > 0 ? (
+          <View style={styles.sessionSelector}>
+            <TouchableOpacity
+              style={styles.selectorBtn}
+              onPress={() => {
+                const idx = todaySessions.findIndex(
+                  (s) => s.id === selectedSessionId,
+                );
+                const nextIdx = (idx + 1) % todaySessions.length;
+                setSelectedSessionId(todaySessions[nextIdx].id);
+              }}
+            >
+              <MaterialIcons
+                name="chevron-left"
+                size={20}
+                color={COLORS.primary}
+              />
+              <Text style={styles.selectorText} numberOfLines={1}>
+                {selectedSession
+                  ? `${selectedSession.subject} - ${selectedSession.topic}`
+                  : 'Selecciona sesión'}
+              </Text>
+              <MaterialIcons
+                name="chevron-right"
+                size={20}
+                color={COLORS.primary}
+              />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.noSessionBadge}>
+            <MaterialIcons
+              name="info-outline"
+              size={16}
+              color={COLORS.onSurfaceVariant}
+            />
+            <Text style={styles.noSessionText}>
+              No hay sesiones para hoy
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.timerContainer}>
@@ -163,7 +223,10 @@ export default function FocusZoneScreen() {
 
         <TouchableOpacity
           style={styles.controlBtn}
-          onPress={() => setIsActive(false)}
+          onPress={() => {
+            setIsActive(false);
+            setTimeLeft(totalSeconds);
+          }}
         >
           <MaterialIcons
             name="stop"
@@ -183,12 +246,14 @@ export default function FocusZoneScreen() {
             />
           </View>
           <View>
-            <Text style={styles.breakLabel}>Siguiente descanso</Text>
-            <Text style={styles.breakValue}>5 minutos</Text>
+            <Text style={styles.breakLabel}>Pomodoros completados</Text>
+            <Text style={styles.breakValue}>{completedPomodoros}</Text>
           </View>
         </View>
         <View style={styles.breakCounter}>
-          <Text style={styles.breakCounterText}>1/4</Text>
+          <Text style={styles.breakCounterText}>
+            {completedPomodoros}/4
+          </Text>
         </View>
       </View>
     </SafeAreaView>
@@ -211,9 +276,30 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: COLORS.onBackground,
-    marginBottom: 10,
+    marginBottom: 16,
   },
-  studyingBadge: {
+  sessionSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectorBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.surfaceContainer,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: RADIUS.round,
+    maxWidth: 280,
+  },
+  selectorText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.onSurfaceVariant,
+    flex: 1,
+    textAlign: 'center',
+  },
+  noSessionBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -222,15 +308,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: RADIUS.round,
   },
-  pulseDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.primary,
-  },
-  studyingText: {
+  noSessionText: {
     fontSize: 13,
-    fontWeight: '500',
     color: COLORS.onSurfaceVariant,
   },
   timerContainer: {

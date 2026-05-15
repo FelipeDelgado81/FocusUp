@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,34 +7,15 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
 import { useSessions } from '../hooks/useSessions';
+import type { RootStackNavigationProp } from '../navigation/types';
 import SessionCard from '../components/SessionCard';
 import StatCard from '../components/StatCard';
-
-interface Props {
-  navigation: { navigate: (screen: string) => void };
-}
-
-function getTodaySessionsCount(sessions: ReturnType<typeof useSessions>['sessions']): number {
-  const today = new Date().toISOString().split('T')[0];
-  return sessions.filter((s) => s.date === today).length;
-}
-
-function getTotalSessionsCount(sessions: ReturnType<typeof useSessions>['sessions']): number {
-  return sessions.length;
-}
-
-function getProgressPercentage(sessions: ReturnType<typeof useSessions>['sessions']): number {
-  const today = new Date().toISOString().split('T')[0];
-  const todaySessions = sessions.filter((s) => s.date === today).length;
-  if (todaySessions === 0) return 0;
-  const target = 5;
-  return Math.min((todaySessions / target) * 100, 100);
-}
 
 function getEmptyStateMessage(): { title: string; sub: string } {
   const hour = new Date().getHours();
@@ -43,12 +24,25 @@ function getEmptyStateMessage(): { title: string; sub: string } {
   return { title: '¡Buenas noches!', sub: 'Última oportunidad para estudiar hoy' };
 }
 
-export default function DashboardScreen({ navigation }: Props) {
+export default function DashboardScreen() {
+  const navigation = useNavigation<RootStackNavigationProp>();
   const { sessions, loading } = useSessions();
 
-  const todayCount = getTodaySessionsCount(sessions);
-  const totalCount = getTotalSessionsCount(sessions);
-  const progress = getProgressPercentage(sessions);
+  const today = new Date().toISOString().split('T')[0];
+
+  const todayCount = useMemo(
+    () => sessions.filter((s) => s.date === today).length,
+    [sessions, today],
+  );
+
+  const totalCount = sessions.length;
+
+  const progress = useMemo(() => {
+    if (todayCount === 0) return 0;
+    const target = 5;
+    return Math.min((todayCount / target) * 100, 100);
+  }, [todayCount]);
+
   const circumference = 2 * Math.PI * 42;
   const strokeOffset = circumference * (1 - progress / 100);
   const emptyState = getEmptyStateMessage();
@@ -64,7 +58,16 @@ export default function DashboardScreen({ navigation }: Props) {
           <Text style={styles.greetSub}>{emptyState.sub}</Text>
         </View>
 
-        {totalCount > 0 ? (
+        {loading ? (
+          <View style={styles.emptyState}>
+            <MaterialIcons
+              name="hourglass-empty"
+              size={64}
+              color={COLORS.outlineVariant}
+            />
+            <Text style={styles.emptyTitle}>Cargando...</Text>
+          </View>
+        ) : totalCount > 0 ? (
           <>
             <View style={styles.progressCard}>
               <View style={{ zIndex: 1, flex: 1 }}>
@@ -258,11 +261,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.onBackground,
-  },
-  seeAll: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primary,
   },
   sessionsScroll: {
     gap: 14,
