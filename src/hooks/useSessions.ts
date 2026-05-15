@@ -1,11 +1,24 @@
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { getSessions, type Session } from '../storage/asyncStorage';
+import {
+  getSessions,
+  addSession,
+  updateSession,
+  deleteSession,
+  type Session,
+} from '../storage/asyncStorage';
+
+export type { Session } from '../storage/asyncStorage';
+
+type NewSession = Omit<Session, 'id'>;
 
 interface UseSessionsReturn {
   sessions: Session[];
   loading: boolean;
   refresh: () => Promise<void>;
+  add: (session: NewSession) => Promise<void>;
+  update: (id: string, updates: Partial<Omit<Session, 'id'>>) => Promise<void>;
+  remove: (id: string) => Promise<void>;
 }
 
 export function useSessions(): UseSessionsReturn {
@@ -25,11 +38,26 @@ export function useSessions(): UseSessionsReturn {
     }
   }, []);
 
+  const add = useCallback(async (session: NewSession) => {
+    const updated = await addSession(session);
+    setSessions(updated);
+  }, []);
+
+  const update = useCallback(async (id: string, updates: Partial<Omit<Session, 'id'>>) => {
+    const updated = await updateSession(id, updates);
+    setSessions(updated);
+  }, []);
+
+  const remove = useCallback(async (id: string) => {
+    const updated = await deleteSession(id);
+    setSessions(updated);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       refresh();
     }, [refresh]),
   );
 
-  return { sessions, loading, refresh };
+  return { sessions, loading, refresh, add, update, remove };
 }
