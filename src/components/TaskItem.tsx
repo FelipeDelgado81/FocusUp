@@ -8,9 +8,10 @@ interface Props {
   task: Task;
   onToggle: (id: string) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
-export default function TaskItem({ task, onToggle, onDelete }: Props) {
+export default function TaskItem({ task, onToggle, onDelete, onEdit }: Props) {
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -56,13 +57,24 @@ export default function TaskItem({ task, onToggle, onDelete }: Props) {
         </View>
       </View>
       {onDelete && !task.completed && (
-        <TouchableOpacity
-          style={styles.deleteBtn}
-          onPress={() => onDelete(task.id)}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons name="delete-outline" size={20} color={COLORS.error} />
-        </TouchableOpacity>
+        <View style={styles.actionBtns}>
+          {onEdit && (
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => onEdit(task.id)}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="edit" size={20} color={COLORS.primary} />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={() => onDelete(task.id)}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="delete-outline" size={20} color={COLORS.error} />
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -131,7 +143,10 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
-  deleteBtn: {
+  actionBtns: {
+    gap: 4,
+  },
+  actionBtn: {
     padding: 4,
   },
 });
