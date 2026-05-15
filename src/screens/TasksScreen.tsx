@@ -7,29 +7,38 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
-import { toggleTaskCompleted } from '../storage/asyncStorage';
 import { useTasks } from '../hooks/useTasks';
+import type { RootStackNavigationProp } from '../navigation/types';
 import TaskItem from '../components/TaskItem';
 
-const CATEGORIES: string[] = ['Todas', 'Historia', 'Matemáticas', 'Ciencias', 'Arte'];
+const CATEGORIES: string[] = ['Todas', 'Historia', 'Matemáticas', 'Ciencias', 'Arte', 'Programación', 'Idiomas'];
 
 export default function TasksScreen() {
-  const { tasks, loading, refresh } = useTasks();
+  const navigation = useNavigation<RootStackNavigationProp>();
+  const { tasks, loading, toggle, remove } = useTasks();
   const [selectedCat, setSelectedCat] = useState('Todas');
   const [showCompleted, setShowCompleted] = useState(false);
 
   const handleToggle = async (id: string): Promise<void> => {
-    await toggleTaskCompleted(id);
-    refresh();
+    await toggle(id);
+  };
+
+  const handleDelete = (id: string) => {
+    remove(id);
   };
 
   const filtered = tasks.filter((t) => {
     const cat = selectedCat === 'Todas' || t.category === selectedCat;
     return cat && (showCompleted ? t.completed : !t.completed);
   });
+
+  const highPriorityCount = tasks.filter(
+    (t) => !t.completed && t.priority === 'ALTA',
+  ).length;
 
   return (
     <SafeAreaView style={s.container} edges={['top', 'left', 'right']}>
@@ -40,9 +49,9 @@ export default function TasksScreen() {
         <View style={s.header}>
           <Text style={s.title}>Mis Tareas Pendientes</Text>
           <Text style={s.sub}>
-            Tienes{' '}
-            {tasks.filter((t) => !t.completed && t.priority === 'ALTA').length}{' '}
-            tareas con alta prioridad.
+            {highPriorityCount > 0
+              ? `Tienes ${highPriorityCount} tarea${highPriorityCount > 1 ? 's' : ''} con alta prioridad.`
+              : '¡Sigue así! No tienes tareas urgentes.'}
           </Text>
         </View>
 
@@ -51,34 +60,52 @@ export default function TasksScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={s.chips}
         >
-          {CATEGORIES.map((c) => (
+          {CATEGORIES.map((cat) => (
             <TouchableOpacity
-              key={c}
-              style={[s.chip, selectedCat === c && s.chipOn]}
-              onPress={() => setSelectedCat(c)}
+              key={cat}
+              style={[s.chip, selectedCat === cat && s.chipOn]}
+              onPress={() => setSelectedCat(cat)}
             >
-              <Text style={[s.chipTxt, selectedCat === c && s.chipTxtOn]}>
-                {c}
+              <Text style={[s.chipTxt, selectedCat === cat && s.chipTxtOn]}>
+                {cat}
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
         <View style={{ gap: 12 }}>
-          {filtered.map((t) => (
-            <TaskItem key={t.id} task={t} onToggle={handleToggle} />
-          ))}
-          {filtered.length === 0 && (
+          {loading ? (
             <View style={s.empty}>
               <MaterialIcons
-                name="check-circle-outline"
+                name="hourglass-empty"
                 size={48}
                 color={COLORS.outlineVariant}
               />
-              <Text style={s.emptyTxt}>
-                {showCompleted ? 'No hay completadas' : '¡Todo listo!'}
-              </Text>
+              <Text style={s.emptyTxt}>Cargando tareas...</Text>
             </View>
+          ) : (
+            <>
+              {filtered.map((t) => (
+                <TaskItem
+                  key={t.id}
+                  task={t}
+                  onToggle={handleToggle}
+                  onDelete={handleDelete}
+                />
+              ))}
+              {filtered.length === 0 && (
+                <View style={s.empty}>
+                  <MaterialIcons
+                    name="check-circle-outline"
+                    size={48}
+                    color={COLORS.outlineVariant}
+                  />
+                  <Text style={s.emptyTxt}>
+                    {showCompleted ? 'No hay completadas' : '¡Todo listo!'}
+                  </Text>
+                </View>
+              )}
+            </>
           )}
           <TouchableOpacity
             style={s.toggle}
@@ -96,7 +123,11 @@ export default function TasksScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={s.fab} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={s.fab}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('NuevaTarea')}
+      >
         <LinearGradient
           colors={[COLORS.primary, COLORS.primaryContainer]}
           style={s.fabG}
