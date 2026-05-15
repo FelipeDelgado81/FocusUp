@@ -40,6 +40,10 @@ export default function TasksScreen() {
     ]);
   };
 
+  const handleEdit = (id: string) => {
+    navigation.navigate('NuevaTarea', { taskId: id });
+  };
+
   const filtered = tasks.filter((t) => {
     const cat = selectedCat === 'Todas' || t.category === selectedCat;
     return cat && (showCompleted ? t.completed : !t.completed);
@@ -100,6 +104,7 @@ export default function TasksScreen() {
                   task={t}
                   onToggle={handleToggle}
                   onDelete={handleDelete}
+                  onEdit={handleEdit}
                 />
               ))}
               {filtered.length === 0 && (
