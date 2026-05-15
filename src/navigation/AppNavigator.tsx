@@ -12,6 +12,7 @@ import FocusZoneScreen from '../screens/FocusZoneScreen';
 import MetricsScreen from '../screens/MetricsScreen';
 import TasksScreen from '../screens/TasksScreen';
 import NewSessionScreen from '../screens/NewSessionScreen';
+import NewTaskScreen from '../screens/NewTaskScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -21,7 +22,7 @@ type IconName = keyof typeof MaterialIcons.glyphMap;
 interface TabItem {
   name: string;
   icon: IconName;
-  component: React.ComponentType<any>;
+  component: React.ComponentType;
 }
 
 const TAB_ITEMS: TabItem[] = [
@@ -97,6 +98,19 @@ export default function AppNavigator() {
           options={{
             headerShown: true,
             title: 'Nueva Sesión',
+            headerStyle: { backgroundColor: COLORS.background },
+            headerTintColor: COLORS.primary,
+            headerTitleStyle: { fontWeight: '700', color: COLORS.onBackground },
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name="NuevaTarea"
+          component={NewTaskScreen}
+          options={{
+            headerShown: true,
+            title: 'Nueva Tarea',
             headerStyle: { backgroundColor: COLORS.background },
             headerTintColor: COLORS.primary,
             headerTitleStyle: { fontWeight: '700', color: COLORS.onBackground },
