@@ -4,7 +4,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 export type RootStackParamList = {
   Tabs: undefined;
   NuevaSesion: { sessionId?: string } | undefined;
-  NuevaTarea: undefined;
+  NuevaTarea: { taskId?: string } | undefined;
 };
 
 export type TabParamList = {
