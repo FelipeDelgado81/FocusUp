@@ -40,6 +40,7 @@ export interface MetricsSummary {
   totalSessions: number;
   completedTasks: number;
   todaySessions: number;
+  totalStudyMinutes: number;
 }
 
 export function getWeeklyData(sessions: Session[]): number[] {
@@ -105,6 +106,29 @@ export function getStreak(sessions: Session[]): number {
   return streak;
 }
 
+function parseTimeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
+export function getTotalStudyMinutes(sessions: Session[]): number {
+  return sessions.reduce((total, session) => {
+    const start = parseTimeToMinutes(session.startTime);
+    const end = parseTimeToMinutes(session.endTime);
+    const duration = end - start;
+    return total + (duration > 0 ? duration : 0);
+  }, 0);
+}
+
+export function formatStudyTime(minutes: number): string {
+  if (minutes === 0) return '0 min';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
 export function getMetricsSummary(
   sessions: Session[],
   tasks: Task[],
@@ -118,5 +142,6 @@ export function getMetricsSummary(
     totalSessions: sessions.length,
     completedTasks: tasks.filter((task) => task.completed).length,
     todaySessions: sessions.filter((session) => session.date === today).length,
+    totalStudyMinutes: getTotalStudyMinutes(sessions),
   };
 }

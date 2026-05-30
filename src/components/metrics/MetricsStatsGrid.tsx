@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { COLORS, RADIUS } from '../../constants/theme';
+import { formatStudyTime } from '../../utils/metrics';
 import MetricTile from './MetricTile';
 
 interface MetricsStatsGridProps {
@@ -8,6 +9,7 @@ interface MetricsStatsGridProps {
   todaySessions: number;
   completedTasks: number;
   streak: number;
+  totalStudyMinutes: number;
 }
 
 export default function MetricsStatsGrid({
@@ -15,6 +17,7 @@ export default function MetricsStatsGrid({
   todaySessions,
   completedTasks,
   streak,
+  totalStudyMinutes,
 }: MetricsStatsGridProps) {
   return (
     <View style={styles.statsGrid}>
@@ -55,6 +58,14 @@ export default function MetricsStatsGrid({
           style={styles.primaryTile}
         />
       </View>
+
+      <MetricTile
+        icon="schedule"
+        iconColor={COLORS.secondary}
+        label="Horas estudiadas"
+        value={formatStudyTime(totalStudyMinutes)}
+        style={styles.fullWidthTile}
+      />
     </View>
   );
 }
@@ -82,5 +93,9 @@ const styles = StyleSheet.create({
   tertiaryTile: {
     backgroundColor: COLORS.tertiaryFixed,
     borderRadius: RADIUS.xxl,
+  },
+  fullWidthTile: {
+    borderBottomWidth: 4,
+    borderBottomColor: COLORS.secondary,
   },
 });

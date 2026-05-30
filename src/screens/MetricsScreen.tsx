@@ -45,6 +45,7 @@ export default function MetricsScreen() {
                 todaySessions={metrics.todaySessions}
                 completedTasks={metrics.completedTasks}
                 streak={metrics.streak}
+                totalStudyMinutes={metrics.totalStudyMinutes}
               />
               <StreakBanner streak={metrics.streak} />
             </View>
