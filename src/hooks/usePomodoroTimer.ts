@@ -64,7 +64,6 @@ export function usePomodoroTimer({
     progress,
     toggleTimer: () => setIsActive((value) => !value),
     resetTimer: () => {
-      setIsActive(false);
       setTimeLeft(totalSeconds);
     },
     stopTimer: () => {
