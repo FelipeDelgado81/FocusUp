@@ -7,12 +7,15 @@ import MetricsStatsGrid from '../components/metrics/MetricsStatsGrid';
 import StreakBanner from '../components/metrics/StreakBanner';
 import SubjectStatsList from '../components/metrics/SubjectStatsList';
 import WeeklyChart from '../components/metrics/WeeklyChart';
-import { COLORS } from '../constants/theme';
+import { type ThemeColors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import { useSessions } from '../hooks/useSessions';
 import { useTasks } from '../hooks/useTasks';
 import { getMetricsSummary } from '../utils/metrics';
 
 export default function MetricsScreen() {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const { sessions } = useSessions();
   const { tasks } = useTasks();
 
@@ -59,14 +62,15 @@ export default function MetricsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scroll: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 100,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    scroll: {
+      paddingHorizontal: 20,
+      paddingTop: 16,
+      paddingBottom: 100,
+    },
+  });

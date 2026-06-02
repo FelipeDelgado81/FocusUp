@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { COLORS } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import StatCard from '../StatCard';
 
 interface DashboardStatsRowProps {
@@ -12,6 +12,7 @@ export default function DashboardStatsRow({
   totalCount,
   todayCount,
 }: DashboardStatsRowProps) {
+  const { colors: COLORS } = useTheme();
   return (
     <View style={styles.statsRow}>
       <StatCard

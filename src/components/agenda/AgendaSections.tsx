@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS } from '../../constants/theme';
+import { type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 interface SessionsDayHeaderProps {
   count: number;
 }
 
 export function SessionsDayHeader({ count }: SessionsDayHeaderProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.sessionsHeader}>
       <Text style={styles.sessionsLabel}>Sesiones del día</Text>
@@ -19,6 +22,8 @@ export function SessionsDayHeader({ count }: SessionsDayHeaderProps) {
 }
 
 export function EmptyDaySessions() {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.emptyState}>
       <MaterialIcons
@@ -34,39 +39,40 @@ export function EmptyDaySessions() {
   );
 }
 
-const styles = StyleSheet.create({
-  sessionsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-    paddingHorizontal: 6,
-  },
-  sessionsLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: COLORS.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-  },
-  sessionsCount: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: COLORS.primary,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-    gap: 8,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.onSurface,
-  },
-  emptySub: {
-    fontSize: 13,
-    color: COLORS.onSurfaceVariant,
-    textAlign: 'center',
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    sessionsHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 14,
+      paddingHorizontal: 6,
+    },
+    sessionsLabel: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: COLORS.onSurfaceVariant,
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
+    },
+    sessionsCount: {
+      fontSize: 12,
+      fontWeight: '500',
+      color: COLORS.primary,
+    },
+    emptyState: {
+      alignItems: 'center',
+      paddingVertical: 48,
+      gap: 8,
+    },
+    emptyTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: COLORS.onSurface,
+    },
+    emptySub: {
+      fontSize: 13,
+      color: COLORS.onSurfaceVariant,
+      textAlign: 'center',
+    },
+  });

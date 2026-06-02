@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
+} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, RADIUS } from '../constants/theme';
+import { RADIUS, type ThemeColors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import type { NuevaTareaRouteProp } from './types';
 
 import DashboardScreen from '../screens/DashboardScreen';
@@ -35,6 +40,8 @@ const TAB_ITEMS: TabItem[] = [
 ];
 
 function TabNavigator() {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -89,8 +96,21 @@ function TabNavigator() {
 }
 
 export default function AppNavigator() {
+  const { colors: COLORS, isDark } = useTheme();
+  const base = isDark ? DarkTheme : DefaultTheme;
+  const navTheme = {
+    ...base,
+    colors: {
+      ...base.colors,
+      background: COLORS.background,
+      card: COLORS.background,
+      text: COLORS.onBackground,
+      primary: COLORS.primary,
+      border: COLORS.outlineVariant,
+    },
+  };
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Tabs" component={TabNavigator} />
         <Stack.Screen
@@ -124,11 +144,12 @@ export default function AppNavigator() {
   );
 }
 
-const styles = StyleSheet.create({
-  activeTab: {
-    backgroundColor: COLORS.primaryFixed + '80',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: RADIUS.lg,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    activeTab: {
+      backgroundColor: COLORS.primaryFixed + '80',
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: RADIUS.lg,
+    },
+  });

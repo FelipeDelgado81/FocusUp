@@ -9,13 +9,16 @@ import {
   SessionsDayHeader,
 } from '../components/agenda/AgendaSections';
 import FloatingAddButton from '../components/FloatingAddButton';
-import { COLORS } from '../constants/theme';
+import { type ThemeColors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import { useSessions } from '../hooks/useSessions';
 import type { RootStackNavigationProp } from '../navigation/types';
 import { formatDateKey } from '../utils/date';
 import { getMonthLabel, getWeekDates, isSameDay } from '../utils/agenda';
 
 export default function AgendaScreen() {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const navigation = useNavigation<RootStackNavigationProp>();
   const { sessions, remove } = useSessions();
   const [weekOffset, setWeekOffset] = useState(0);
@@ -111,27 +114,28 @@ export default function AgendaScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scroll: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 100,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.onBackground,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.onSurfaceVariant,
-    marginTop: 4,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    scroll: {
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      paddingBottom: 100,
+    },
+    header: {
+      marginBottom: 24,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: '800',
+      color: COLORS.onBackground,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: COLORS.onSurfaceVariant,
+      marginTop: 4,
+    },
+  });

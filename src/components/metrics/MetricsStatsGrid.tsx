@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { COLORS, RADIUS } from '../../constants/theme';
+import { RADIUS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import { formatStudyTime } from '../../utils/metrics';
 import MetricTile from './MetricTile';
 
@@ -19,6 +20,8 @@ export default function MetricsStatsGrid({
   streak,
   totalStudyMinutes,
 }: MetricsStatsGridProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.statsGrid}>
       <View style={styles.statsRow}>
@@ -70,32 +73,33 @@ export default function MetricsStatsGrid({
   );
 }
 
-const styles = StyleSheet.create({
-  statsGrid: {
-    marginBottom: 24,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 14,
-    marginBottom: 14,
-  },
-  primaryBorder: {
-    borderBottomWidth: 4,
-    borderBottomColor: COLORS.primary,
-  },
-  secondaryBorder: {
-    borderBottomWidth: 4,
-    borderBottomColor: COLORS.secondary,
-  },
-  primaryTile: {
-    backgroundColor: COLORS.primaryFixed,
-  },
-  tertiaryTile: {
-    backgroundColor: COLORS.tertiaryFixed,
-    borderRadius: RADIUS.xxl,
-  },
-  fullWidthTile: {
-    borderBottomWidth: 4,
-    borderBottomColor: COLORS.secondary,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    statsGrid: {
+      marginBottom: 24,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      gap: 14,
+      marginBottom: 14,
+    },
+    primaryBorder: {
+      borderBottomWidth: 4,
+      borderBottomColor: COLORS.primary,
+    },
+    secondaryBorder: {
+      borderBottomWidth: 4,
+      borderBottomColor: COLORS.secondary,
+    },
+    primaryTile: {
+      backgroundColor: COLORS.primaryFixed,
+    },
+    tertiaryTile: {
+      backgroundColor: COLORS.tertiaryFixed,
+      borderRadius: RADIUS.xxl,
+    },
+    fullWidthTile: {
+      borderBottomWidth: 4,
+      borderBottomColor: COLORS.secondary,
+    },
+  });

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, RADIUS, SHADOWS } from '../../constants/theme';
+import { RADIUS, SHADOWS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FormActionsProps {
   saveLabel: string;
@@ -15,6 +16,8 @@ export default function FormActions({
   onSave,
   onCancel,
 }: FormActionsProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <>
       <TouchableOpacity activeOpacity={0.8} onPress={onSave}>
@@ -40,32 +43,33 @@ export default function FormActions({
   );
 }
 
-const styles = StyleSheet.create({
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: RADIUS.lg,
-    marginTop: 24,
-    ...SHADOWS.primaryGlow,
-  },
-  saveText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.onPrimary,
-  },
-  cancelButton: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainerHigh,
-    marginTop: 12,
-  },
-  cancelText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.onSurfaceVariant,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    saveButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingVertical: 16,
+      borderRadius: RADIUS.lg,
+      marginTop: 24,
+      ...SHADOWS.primaryGlow,
+    },
+    saveText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: COLORS.onPrimary,
+    },
+    cancelButton: {
+      alignItems: 'center',
+      paddingVertical: 16,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.surfaceContainerHigh,
+      marginTop: 12,
+    },
+    cancelText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: COLORS.onSurfaceVariant,
+    },
+  });

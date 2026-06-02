@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { PRIORITIES } from '../../constants/formOptions';
-import { COLORS, RADIUS } from '../../constants/theme';
-import { formFieldStyles } from './FormField';
+import { getPriorities } from '../../constants/formOptions';
+import { RADIUS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
+import { useFormFieldStyles } from './FormField';
 
 interface PrioritySelectorProps {
   label: string;
@@ -15,11 +16,15 @@ export default function PrioritySelector({
   value,
   onChange,
 }: PrioritySelectorProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const priorities = useMemo(() => getPriorities(COLORS), [COLORS]);
+  const fieldStyles = useFormFieldStyles();
   return (
     <View>
-      <Text style={formFieldStyles.label}>{label}</Text>
+      <Text style={fieldStyles.label}>{label}</Text>
       <View style={styles.priorityRow}>
-        {PRIORITIES.map((priority) => {
+        {priorities.map((priority) => {
           const selected = value === priority.value;
 
           return (
@@ -53,33 +58,34 @@ export default function PrioritySelector({
   );
 }
 
-const styles = StyleSheet.create({
-  priorityRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  priorityButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainer,
-    borderWidth: 2,
-    borderColor: COLORS.transparent,
-  },
-  priorityDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  priorityText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    priorityRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    priorityButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingVertical: 12,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.surfaceContainer,
+      borderWidth: 2,
+      borderColor: COLORS.transparent,
+    },
+    priorityDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    priorityText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.onSurfaceVariant,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+    },
+  });

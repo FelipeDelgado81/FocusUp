@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleProp,
   StyleSheet,
@@ -8,7 +8,8 @@ import {
   TextStyle,
   View,
 } from 'react-native';
-import { COLORS, RADIUS } from '../../constants/theme';
+import { RADIUS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FormFieldProps extends TextInputProps {
   label: string;
@@ -20,6 +21,8 @@ export default function FormField({
   inputStyle,
   ...inputProps
 }: FormFieldProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View>
       <Text style={styles.label}>{label}</Text>
@@ -32,23 +35,27 @@ export default function FormField({
   );
 }
 
-const styles = StyleSheet.create({
-  label: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.onSurface,
-    marginBottom: 8,
-    marginTop: 16,
-    marginLeft: 4,
-  },
-  input: {
-    backgroundColor: COLORS.surfaceContainerLow,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: COLORS.onSurface,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    label: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: COLORS.onSurface,
+      marginBottom: 8,
+      marginTop: 16,
+      marginLeft: 4,
+    },
+    input: {
+      backgroundColor: COLORS.surfaceContainerLow,
+      borderRadius: RADIUS.lg,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 15,
+      color: COLORS.onSurface,
+    },
+  });
 
-export const formFieldStyles = styles;
+export function useFormFieldStyles() {
+  const { colors: COLORS } = useTheme();
+  return useMemo(() => createStyles(COLORS), [COLORS]);
+}

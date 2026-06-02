@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, RADIUS, SHADOWS } from '../../constants/theme';
+import { RADIUS, SHADOWS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FocusControlsProps {
   isActive: boolean;
@@ -17,6 +18,8 @@ export default function FocusControls({
   onReset,
   onStop,
 }: FocusControlsProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.controls}>
       <TouchableOpacity style={styles.controlBtn} onPress={onReset}>
@@ -53,29 +56,30 @@ export default function FocusControls({
   );
 }
 
-const styles = StyleSheet.create({
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 24,
-    marginBottom: 40,
-  },
-  controlBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playBtn: {
-    ...SHADOWS.primaryGlow,
-  },
-  playGradient: {
-    width: 76,
-    height: 76,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    controls: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 24,
+      marginBottom: 40,
+    },
+    controlBtn: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.surfaceContainer,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    playBtn: {
+      ...SHADOWS.primaryGlow,
+    },
+    playGradient: {
+      width: 76,
+      height: 76,
+      borderRadius: 26,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -8,8 +8,9 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, RADIUS } from '../../constants/theme';
-import { formFieldStyles } from './FormField';
+import { RADIUS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
+import { useFormFieldStyles } from './FormField';
 
 interface DateTimeFieldProps {
   label: string;
@@ -38,9 +39,12 @@ export default function DateTimeField({
   onClose,
   onChange,
 }: DateTimeFieldProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const fieldStyles = useFormFieldStyles();
   return (
     <View>
-      <Text style={formFieldStyles.label}>{label}</Text>
+      <Text style={fieldStyles.label}>{label}</Text>
       <TouchableOpacity style={styles.dateButton} onPress={onOpen}>
         <MaterialIcons
           name={icon}
@@ -78,40 +82,41 @@ export default function DateTimeField({
   );
 }
 
-const styles = StyleSheet.create({
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.surfaceContainerLow,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  dateButtonText: {
-    fontSize: 15,
-    color: COLORS.outline,
-    flex: 1,
-  },
-  filledText: {
-    color: COLORS.onSurface,
-  },
-  pickerContainer: {
-    marginTop: 8,
-  },
-  iosActions: {
-    alignItems: 'flex-end',
-    paddingTop: 8,
-  },
-  doneButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.primary,
-  },
-  doneText: {
-    color: COLORS.onPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    dateButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: COLORS.surfaceContainerLow,
+      borderRadius: RADIUS.lg,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    dateButtonText: {
+      fontSize: 15,
+      color: COLORS.outline,
+      flex: 1,
+    },
+    filledText: {
+      color: COLORS.onSurface,
+    },
+    pickerContainer: {
+      marginTop: 8,
+    },
+    iosActions: {
+      alignItems: 'flex-end',
+      paddingTop: 8,
+    },
+    doneButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: RADIUS.md,
+      backgroundColor: COLORS.primary,
+    },
+    doneText: {
+      color: COLORS.onPrimary,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+  });

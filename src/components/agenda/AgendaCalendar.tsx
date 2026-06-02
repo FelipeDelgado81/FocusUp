@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, RADIUS, SHADOWS } from '../../constants/theme';
+import { RADIUS, SHADOWS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import { isSameDay, WEEK_DAY_LABELS } from '../../utils/agenda';
 
 interface AgendaCalendarProps {
@@ -23,6 +24,8 @@ export default function AgendaCalendar({
   onToday,
   onNextWeek,
 }: AgendaCalendarProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.calendarCard}>
       <View style={styles.calendarHeader}>
@@ -89,80 +92,81 @@ export default function AgendaCalendar({
   );
 }
 
-const styles = StyleSheet.create({
-  calendarCard: {
-    backgroundColor: COLORS.surfaceContainerLowest,
-    borderRadius: RADIUS.xxl,
-    padding: 16,
-    marginBottom: 24,
-    ...SHADOWS.sm,
-  },
-  calendarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 6,
-  },
-  monthLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.onSurface,
-  },
-  calendarNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  todayBtn: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  daysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  dayCell: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: RADIUS.lg,
-    gap: 6,
-  },
-  dayCellSelected: {
-    backgroundColor: COLORS.primary,
-    ...SHADOWS.md,
-  },
-  dayLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    color: COLORS.onSurfaceVariant,
-  },
-  dayLabelSelected: {
-    color: COLORS.onPrimary + 'cc',
-  },
-  dayNumber: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.onSurface,
-  },
-  dayNumberSelected: {
-    color: COLORS.onPrimary,
-    fontWeight: '700',
-  },
-  dayNumberToday: {
-    color: COLORS.primary,
-    fontWeight: '700',
-  },
-  dayDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.white,
-  },
-  dayDotToday: {
-    backgroundColor: COLORS.primary,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    calendarCard: {
+      backgroundColor: COLORS.surfaceContainerLowest,
+      borderRadius: RADIUS.xxl,
+      padding: 16,
+      marginBottom: 24,
+      ...SHADOWS.sm,
+    },
+    calendarHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+      paddingHorizontal: 6,
+    },
+    monthLabel: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: COLORS.onSurface,
+    },
+    calendarNav: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    todayBtn: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: COLORS.primary,
+    },
+    daysRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    dayCell: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 10,
+      borderRadius: RADIUS.lg,
+      gap: 6,
+    },
+    dayCellSelected: {
+      backgroundColor: COLORS.primary,
+      ...SHADOWS.md,
+    },
+    dayLabel: {
+      fontSize: 10,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      color: COLORS.onSurfaceVariant,
+    },
+    dayLabelSelected: {
+      color: COLORS.onPrimary + 'cc',
+    },
+    dayNumber: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: COLORS.onSurface,
+    },
+    dayNumberSelected: {
+      color: COLORS.onPrimary,
+      fontWeight: '700',
+    },
+    dayNumberToday: {
+      color: COLORS.primary,
+      fontWeight: '700',
+    },
+    dayDot: {
+      width: 4,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: COLORS.white,
+    },
+    dayDotToday: {
+      backgroundColor: COLORS.primary,
+    },
+  });

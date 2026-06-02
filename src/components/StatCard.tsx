@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, RADIUS } from '../constants/theme';
+import { RADIUS, type ThemeColors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 
 interface Props {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -18,6 +19,8 @@ export default function StatCard({
   label,
   style,
 }: Props) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={[styles.card, style]}>
       <MaterialIcons
@@ -31,25 +34,26 @@ export default function StatCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.surfaceContainerLow,
-    padding: 20,
-    borderRadius: RADIUS.xxl,
-    flex: 1,
-  },
-  value: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.onSurface,
-    marginTop: 8,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginTop: 2,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: COLORS.surfaceContainerLow,
+      padding: 20,
+      borderRadius: RADIUS.xxl,
+      flex: 1,
+    },
+    value: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: COLORS.onSurface,
+      marginTop: 8,
+    },
+    label: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.onSurfaceVariant,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+      marginTop: 2,
+    },
+  });

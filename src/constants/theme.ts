@@ -1,4 +1,3 @@
-type ColorPalette = Record<string, string>;
 type FontStyle = {
   fontFamily: string;
   fontWeight: '400' | '500' | '600' | '700' | '800';
@@ -16,7 +15,7 @@ type Shadow = {
 };
 type Shadows = Record<string, Shadow>;
 
-export const COLORS: ColorPalette = {
+export const lightColors = {
   background: '#f7f9fb',
   onBackground: '#191c1e',
   surface: '#f7f9fb',
@@ -67,6 +66,64 @@ export const COLORS: ColorPalette = {
   white: '#ffffff',
   transparent: 'transparent',
 };
+
+export type ThemeColors = typeof lightColors;
+
+// Las claves "Fixed" de Material 3 se mantienen iguales en ambos temas.
+export const darkColors: ThemeColors = {
+  background: '#111416',
+  onBackground: '#e2e2e5',
+  surface: '#111416',
+  onSurface: '#e2e2e5',
+  onSurfaceVariant: '#c3c6cf',
+  primary: '#b4c5ff',
+  onPrimary: '#002c71',
+  primaryContainer: '#1b46a3',
+  onPrimaryContainer: '#dbe1ff',
+  primaryFixed: '#dbe1ff',
+  primaryFixedDim: '#b4c5ff',
+  onPrimaryFixed: '#00174b',
+  onPrimaryFixedVariant: '#003ea8',
+  secondary: '#4edea3',
+  onSecondary: '#003824',
+  secondaryContainer: '#005236',
+  onSecondaryContainer: '#6ffbbe',
+  secondaryFixed: '#6ffbbe',
+  secondaryFixedDim: '#4edea3',
+  onSecondaryFixed: '#002113',
+  onSecondaryFixedVariant: '#005236',
+  tertiary: '#ffb95f',
+  onTertiary: '#452b00',
+  tertiaryContainer: '#653e00',
+  onTertiaryContainer: '#ffddb8',
+  tertiaryFixed: '#ffddb8',
+  tertiaryFixedDim: '#ffb95f',
+  onTertiaryFixed: '#2a1700',
+  onTertiaryFixedVariant: '#653e00',
+  error: '#ffb4ab',
+  onError: '#690005',
+  errorContainer: '#93000a',
+  onErrorContainer: '#ffdad6',
+  surfaceBright: '#37393b',
+  surfaceDim: '#111416',
+  surfaceTint: '#b4c5ff',
+  surfaceVariant: '#43474e',
+  surfaceContainer: '#1d2022',
+  surfaceContainerLow: '#191c1e',
+  surfaceContainerHigh: '#282a2d',
+  surfaceContainerHighest: '#333537',
+  surfaceContainerLowest: '#0c0f10',
+  outline: '#8d9199',
+  outlineVariant: '#43474e',
+  inverseSurface: '#e2e2e5',
+  inverseOnSurface: '#2d3133',
+  inversePrimary: '#004ac6',
+  white: '#ffffff',
+  transparent: 'transparent',
+};
+
+// Compatibilidad: usos estáticos no temáticos (utilidades, acentos de gráficos).
+export const COLORS = lightColors;
 
 export const FONTS: Fonts = {
   headline: { fontFamily: 'System', fontWeight: '700' },

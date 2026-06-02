@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, {
   Circle,
@@ -6,7 +6,8 @@ import Svg, {
   LinearGradient as SvgGradient,
   Stop,
 } from 'react-native-svg';
-import { COLORS } from '../../constants/theme';
+import { type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const CIRCLE_RADIUS = 120;
 const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
@@ -26,6 +27,8 @@ export default function FocusTimerRing({
   timeLeft,
   progress,
 }: FocusTimerRingProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const strokeDashoffset = CIRCUMFERENCE - CIRCUMFERENCE * progress;
 
   return (
@@ -72,37 +75,38 @@ export default function FocusTimerRing({
   );
 }
 
-const styles = StyleSheet.create({
-  timerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  timerGlow: {
-    position: 'absolute',
-    width: CIRCLE_RADIUS * 2 + 40,
-    height: CIRCLE_RADIUS * 2 + 40,
-    borderRadius: CIRCLE_RADIUS + 20,
-    backgroundColor: COLORS.primary + '10',
-  },
-  timerSvg: {
-    transform: [{ rotate: '0deg' }],
-  },
-  timerCenter: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  timerText: {
-    fontSize: 56,
-    fontWeight: '800',
-    color: COLORS.onBackground,
-  },
-  timerLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: COLORS.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    marginTop: 2,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    timerContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 40,
+    },
+    timerGlow: {
+      position: 'absolute',
+      width: CIRCLE_RADIUS * 2 + 40,
+      height: CIRCLE_RADIUS * 2 + 40,
+      borderRadius: CIRCLE_RADIUS + 20,
+      backgroundColor: COLORS.primary + '10',
+    },
+    timerSvg: {
+      transform: [{ rotate: '0deg' }],
+    },
+    timerCenter: {
+      position: 'absolute',
+      alignItems: 'center',
+    },
+    timerText: {
+      fontSize: 56,
+      fontWeight: '800',
+      color: COLORS.onBackground,
+    },
+    timerLabel: {
+      fontSize: 10,
+      fontWeight: '500',
+      color: COLORS.onSurfaceVariant,
+      textTransform: 'uppercase',
+      letterSpacing: 2,
+      marginTop: 2,
+    },
+  });

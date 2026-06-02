@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
+import { RADIUS, SHADOWS, type ThemeColors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import type { Session } from '../storage/asyncStorage';
 
 const SUBJECT_ICONS: Record<string, keyof typeof MaterialIcons.glyphMap> = {
@@ -11,24 +12,24 @@ const SUBJECT_ICONS: Record<string, keyof typeof MaterialIcons.glyphMap> = {
   default: 'book',
 };
 
-const PRIORITY_COLORS: Record<string, string> = {
-  ALTA: COLORS.primary,
-  MEDIA: COLORS.tertiary,
-  BAJA: COLORS.secondary,
-};
-
-const PRIORITY_BG: Record<string, string> = {
-  ALTA: COLORS.primaryFixed,
-  MEDIA: COLORS.tertiaryFixed,
-  BAJA: COLORS.secondaryFixed,
-};
-
 interface Props {
   session: Session;
   compact?: boolean;
 }
 
 export default function SessionCard({ session, compact = false }: Props) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const PRIORITY_COLORS: Record<string, string> = {
+    ALTA: COLORS.primary,
+    MEDIA: COLORS.tertiary,
+    BAJA: COLORS.secondary,
+  };
+  const PRIORITY_BG: Record<string, string> = {
+    ALTA: COLORS.primaryFixed,
+    MEDIA: COLORS.tertiaryFixed,
+    BAJA: COLORS.secondaryFixed,
+  };
   const iconName = SUBJECT_ICONS[session.subject] || SUBJECT_ICONS.default;
   const borderColor = PRIORITY_COLORS[session.priority] || COLORS.primary;
   const iconBg = PRIORITY_BG[session.priority] || COLORS.primaryFixed;
@@ -64,45 +65,46 @@ export default function SessionCard({ session, compact = false }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.surfaceContainerLowest,
-    borderRadius: RADIUS.lg,
-    padding: 16,
-    width: 180,
-    ...SHADOWS.sm,
-  },
-  cardCompact: {
-    width: 160,
-    padding: 12,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: RADIUS.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  subject: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: COLORS.onSurface,
-    marginBottom: 4,
-  },
-  topic: {
-    fontSize: 12,
-    color: COLORS.onSurfaceVariant,
-    marginBottom: 10,
-  },
-  timeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  timeText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: COLORS.onSurfaceVariant,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: COLORS.surfaceContainerLowest,
+      borderRadius: RADIUS.lg,
+      padding: 16,
+      width: 180,
+      ...SHADOWS.sm,
+    },
+    cardCompact: {
+      width: 160,
+      padding: 12,
+    },
+    iconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: RADIUS.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 12,
+    },
+    subject: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: COLORS.onSurface,
+      marginBottom: 4,
+    },
+    topic: {
+      fontSize: 12,
+      color: COLORS.onSurfaceVariant,
+      marginBottom: 10,
+    },
+    timeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    timeText: {
+      fontSize: 11,
+      fontWeight: '500',
+      color: COLORS.onSurfaceVariant,
+    },
+  });

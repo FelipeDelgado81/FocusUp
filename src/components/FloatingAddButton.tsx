@@ -2,7 +2,8 @@ import React from 'react';
 import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
+import { RADIUS, SHADOWS } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 
 interface FloatingAddButtonProps {
   onPress: () => void;
@@ -11,6 +12,7 @@ interface FloatingAddButtonProps {
 const FAB_BOTTOM = Platform.OS === 'ios' ? 100 : 86;
 
 export default function FloatingAddButton({ onPress }: FloatingAddButtonProps) {
+  const { colors: COLORS } = useTheme();
   return (
     <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={onPress}>
       <LinearGradient

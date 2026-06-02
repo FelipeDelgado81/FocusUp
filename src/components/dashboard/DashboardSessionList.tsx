@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../../constants/theme';
+import { type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import type { Session } from '../../hooks/useSessions';
 import SessionCard from '../SessionCard';
 
@@ -11,6 +12,8 @@ interface DashboardSessionListProps {
 export default function DashboardSessionList({
   sessions,
 }: DashboardSessionListProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <>
       <View style={styles.sectionHeader}>
@@ -30,20 +33,21 @@ export default function DashboardSessionList({
   );
 }
 
-const styles = StyleSheet.create({
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.onBackground,
-  },
-  sessionsScroll: {
-    gap: 14,
-    paddingBottom: 8,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 14,
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: COLORS.onBackground,
+    },
+    sessionsScroll: {
+      gap: 14,
+      paddingBottom: 8,
+    },
+  });

@@ -1,21 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, RADIUS } from '../constants/theme';
+import { RADIUS } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 
 type Priority = 'ALTA' | 'MEDIA' | 'BAJA';
-
-const PRIORITY_STYLES: Record<Priority, { bg: string; text: string }> = {
-  ALTA: { bg: COLORS.errorContainer, text: COLORS.onErrorContainer },
-  MEDIA: { bg: COLORS.surfaceContainerHigh, text: COLORS.onSurfaceVariant },
-  BAJA: { bg: COLORS.surfaceContainerLow, text: COLORS.onSurfaceVariant },
-};
 
 interface Props {
   priority: Priority;
 }
 
 export default function PriorityBadge({ priority }: Props) {
-  const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES.BAJA;
+  const { colors: COLORS } = useTheme();
+  const priorityStyles: Record<Priority, { bg: string; text: string }> = {
+    ALTA: { bg: COLORS.errorContainer, text: COLORS.onErrorContainer },
+    MEDIA: { bg: COLORS.surfaceContainerHigh, text: COLORS.onSurfaceVariant },
+    BAJA: { bg: COLORS.surfaceContainerLow, text: COLORS.onSurfaceVariant },
+  };
+  const style = priorityStyles[priority] || priorityStyles.BAJA;
 
   return (
     <View style={[styles.badge, { backgroundColor: style.bg }]}>

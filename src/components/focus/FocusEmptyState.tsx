@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, RADIUS, SHADOWS } from '../../constants/theme';
+import { RADIUS, SHADOWS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FocusEmptyStateProps {
   onCreateSession: () => void;
@@ -10,6 +11,8 @@ interface FocusEmptyStateProps {
 export default function FocusEmptyState({
   onCreateSession,
 }: FocusEmptyStateProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.container}>
       <View style={styles.iconWrapper}>
@@ -31,49 +34,50 @@ export default function FocusEmptyState({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    paddingHorizontal: 32,
-  },
-  iconWrapper: {
-    width: 88,
-    height: 88,
-    borderRadius: RADIUS.xxl,
-    backgroundColor: COLORS.primaryFixed + '30',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.onBackground,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.onSurfaceVariant,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: RADIUS.round,
-    marginTop: 8,
-    ...SHADOWS.md,
-  },
-  buttonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.onPrimary,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+      paddingHorizontal: 32,
+    },
+    iconWrapper: {
+      width: 88,
+      height: 88,
+      borderRadius: RADIUS.xxl,
+      backgroundColor: COLORS.primaryFixed + '30',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 8,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: COLORS.onBackground,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: 14,
+      color: COLORS.onSurfaceVariant,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    button: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 14,
+      borderRadius: RADIUS.round,
+      marginTop: 8,
+      ...SHADOWS.md,
+    },
+    buttonText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: COLORS.onPrimary,
+    },
+  });

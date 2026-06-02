@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, RADIUS } from '../../constants/theme';
+import { RADIUS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 interface PomodoroSummaryCardProps {
   completedPomodoros: number;
@@ -10,6 +11,8 @@ interface PomodoroSummaryCardProps {
 export default function PomodoroSummaryCard({
   completedPomodoros,
 }: PomodoroSummaryCardProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   return (
     <View style={styles.breakCard}>
       <View style={styles.breakLeft}>
@@ -32,54 +35,55 @@ export default function PomodoroSummaryCard({
   );
 }
 
-const styles = StyleSheet.create({
-  breakCard: {
-    width: '100%',
-    backgroundColor: COLORS.surfaceContainerLow,
-    borderRadius: RADIUS.xxl,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  breakLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  breakIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.secondaryContainer + '50',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  breakLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  breakValue: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: COLORS.onBackground,
-    marginTop: 2,
-  },
-  breakCounter: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: COLORS.outlineVariant,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  breakCounterText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    breakCard: {
+      width: '100%',
+      backgroundColor: COLORS.surfaceContainerLow,
+      borderRadius: RADIUS.xxl,
+      padding: 20,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    breakLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+    },
+    breakIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.secondaryContainer + '50',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    breakLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.onSurfaceVariant,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
+    breakValue: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: COLORS.onBackground,
+      marginTop: 2,
+    },
+    breakCounter: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      borderWidth: 2,
+      borderColor: COLORS.outlineVariant,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    breakCounterText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.primary,
+    },
+  });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import {
@@ -13,7 +13,8 @@ import FormScaffold from '../components/forms/FormScaffold';
 import OptionChips from '../components/forms/OptionChips';
 import PrioritySelector from '../components/forms/PrioritySelector';
 import { SUBJECTS } from '../constants/formOptions';
-import { COLORS, RADIUS } from '../constants/theme';
+import { RADIUS, type ThemeColors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import { useSessions, type Session } from '../hooks/useSessions';
 import type {
   RootStackNavigationProp,
@@ -38,6 +39,8 @@ function getInitialTime(value: string | undefined, fallback: string): Date {
 }
 
 export default function NewSessionScreen() {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const navigation = useNavigation<RootStackNavigationProp>();
   const route = useRoute<NuevaSesionRouteProp>();
   const { sessions, add, update, loading } = useSessions();
@@ -279,41 +282,42 @@ export default function NewSessionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  notice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.errorContainer + '30',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.error + '20',
-    marginBottom: 20,
-  },
-  noticeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.error,
-  },
-  timeRow: {
-    flexDirection: 'row',
-  },
-  timeField: {
-    flex: 1,
-  },
-  timeGap: {
-    width: 12,
-  },
-  notesInput: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  feedbackText: {
-    color: COLORS.onSurfaceVariant,
-    fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    notice: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.errorContainer + '30',
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: RADIUS.md,
+      borderWidth: 1,
+      borderColor: COLORS.error + '20',
+      marginBottom: 20,
+    },
+    noticeText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: COLORS.error,
+    },
+    timeRow: {
+      flexDirection: 'row',
+    },
+    timeField: {
+      flex: 1,
+    },
+    timeGap: {
+      width: 12,
+    },
+    notesInput: {
+      height: 100,
+      textAlignVertical: 'top',
+    },
+    feedbackText: {
+      color: COLORS.onSurfaceVariant,
+      fontSize: 15,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+  });

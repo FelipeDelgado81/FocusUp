@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Alert,
   View,
@@ -11,7 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, RADIUS, SHADOWS } from '../constants/theme';
+import { RADIUS, SHADOWS, type ThemeColors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import { TASK_CATEGORIES } from '../constants/formOptions';
 import { useTasks } from '../hooks/useTasks';
 import type { RootStackNavigationProp } from '../navigation/types';
@@ -20,6 +21,8 @@ import TaskItem from '../components/TaskItem';
 const CATEGORIES: string[] = ['Todas', ...TASK_CATEGORIES];
 
 export default function TasksScreen() {
+  const { colors: COLORS } = useTheme();
+  const s = useMemo(() => createStyles(COLORS), [COLORS]);
   const navigation = useNavigation<RootStackNavigationProp>();
   const { tasks, loading, toggle, remove } = useTasks();
   const [selectedCat, setSelectedCat] = useState('Todas');
@@ -155,51 +158,65 @@ export default function TasksScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  scroll: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 100 },
-  header: { marginBottom: 20 },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: COLORS.onBackground,
-    marginBottom: 6,
-  },
-  sub: { fontSize: 14, color: COLORS.onSurfaceVariant },
-  chips: { gap: 8, paddingBottom: 16, marginBottom: 8 },
-  chip: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: RADIUS.round,
-    backgroundColor: COLORS.surfaceContainerHigh,
-  },
-  chipOn: { backgroundColor: COLORS.primary, ...SHADOWS.md },
-  chipTxt: { fontSize: 14, fontWeight: '600', color: COLORS.onSurfaceVariant },
-  chipTxtOn: { color: COLORS.onPrimary },
-  empty: { alignItems: 'center', paddingVertical: 40, gap: 12 },
-  emptyTxt: { fontSize: 15, fontWeight: '500', color: COLORS.onSurfaceVariant },
-  toggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    backgroundColor: COLORS.surfaceContainerLow,
-    borderRadius: RADIUS.lg,
-  },
-  toggleTxt: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-  },
-  fab: { position: 'absolute', right: 20, bottom: 86, ...SHADOWS.primaryGlow },
-  fabG: {
-    width: 56,
-    height: 56,
-    borderRadius: RADIUS.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: COLORS.background },
+    scroll: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 100 },
+    header: { marginBottom: 20 },
+    title: {
+      fontSize: 28,
+      fontWeight: '700',
+      color: COLORS.onBackground,
+      marginBottom: 6,
+    },
+    sub: { fontSize: 14, color: COLORS.onSurfaceVariant },
+    chips: { gap: 8, paddingBottom: 16, marginBottom: 8 },
+    chip: {
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: RADIUS.round,
+      backgroundColor: COLORS.surfaceContainerHigh,
+    },
+    chipOn: { backgroundColor: COLORS.primary, ...SHADOWS.md },
+    chipTxt: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: COLORS.onSurfaceVariant,
+    },
+    chipTxtOn: { color: COLORS.onPrimary },
+    empty: { alignItems: 'center', paddingVertical: 40, gap: 12 },
+    emptyTxt: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: COLORS.onSurfaceVariant,
+    },
+    toggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingVertical: 16,
+      backgroundColor: COLORS.surfaceContainerLow,
+      borderRadius: RADIUS.lg,
+    },
+    toggleTxt: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.primary,
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
+    },
+    fab: {
+      position: 'absolute',
+      right: 20,
+      bottom: 86,
+      ...SHADOWS.primaryGlow,
+    },
+    fabG: {
+      width: 56,
+      height: 56,
+      borderRadius: RADIUS.xl,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

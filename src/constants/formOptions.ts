@@ -1,4 +1,4 @@
-import { COLORS } from './theme';
+import type { ThemeColors } from './theme';
 
 export const SUBJECTS: string[] = [
   'Matemáticas Avanzadas',
@@ -28,7 +28,7 @@ export interface PriorityOption {
   border: string;
 }
 
-export const PRIORITIES: PriorityOption[] = [
+export const getPriorities = (COLORS: ThemeColors): PriorityOption[] => [
   {
     label: 'Alta',
     value: 'ALTA',

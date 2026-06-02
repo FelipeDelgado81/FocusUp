@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, RADIUS } from '../../constants/theme';
-import { formFieldStyles } from './FormField';
+import { RADIUS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
+import { useFormFieldStyles } from './FormField';
 
 interface OptionChipsProps {
   label: string;
@@ -16,9 +17,12 @@ export default function OptionChips({
   selectedValue,
   onSelect,
 }: OptionChipsProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
+  const fieldStyles = useFormFieldStyles();
   return (
     <View>
-      <Text style={formFieldStyles.label}>{label}</Text>
+      <Text style={fieldStyles.label}>{label}</Text>
       <View style={styles.pickerWrap}>
         {options.map((option) => (
           <TouchableOpacity
@@ -44,30 +48,31 @@ export default function OptionChips({
   );
 }
 
-const styles = StyleSheet.create({
-  pickerWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  pickerItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainerLow,
-  },
-  pickerItemOn: {
-    backgroundColor: COLORS.primaryFixed,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-  },
-  pickerText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.onSurfaceVariant,
-  },
-  pickerTextOn: {
-    color: COLORS.primary,
-    fontWeight: '700',
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    pickerWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    pickerItem: {
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.surfaceContainerLow,
+    },
+    pickerItemOn: {
+      backgroundColor: COLORS.primaryFixed,
+      borderWidth: 1,
+      borderColor: COLORS.primary,
+    },
+    pickerText: {
+      fontSize: 13,
+      fontWeight: '500',
+      color: COLORS.onSurfaceVariant,
+    },
+    pickerTextOn: {
+      color: COLORS.primary,
+      fontWeight: '700',
+    },
+  });

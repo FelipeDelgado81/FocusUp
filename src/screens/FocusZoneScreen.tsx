@@ -7,7 +7,8 @@ import FocusEmptyState from '../components/focus/FocusEmptyState';
 import FocusSessionSelector from '../components/focus/FocusSessionSelector';
 import FocusTimerRing from '../components/focus/FocusTimerRing';
 import PomodoroSummaryCard from '../components/focus/PomodoroSummaryCard';
-import { COLORS } from '../constants/theme';
+import { type ThemeColors } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useSessions } from '../hooks/useSessions';
 import type { RootStackNavigationProp } from '../navigation/types';
@@ -16,6 +17,8 @@ import { getTodayDateKey } from '../utils/date';
 const DEFAULT_FOCUS_MINUTES = 25;
 
 export default function FocusZoneScreen() {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const navigation = useNavigation<RootStackNavigationProp>();
   const { sessions } = useSessions();
   const today = getTodayDateKey();
@@ -96,22 +99,23 @@ export default function FocusZoneScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleSection: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: COLORS.onBackground,
-    marginBottom: 16,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+      paddingHorizontal: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    titleSection: {
+      alignItems: 'center',
+      marginBottom: 32,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: '700',
+      color: COLORS.onBackground,
+      marginBottom: 16,
+    },
+  });

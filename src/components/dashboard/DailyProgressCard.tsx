@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
-import { COLORS, RADIUS, SHADOWS } from '../../constants/theme';
+import { RADIUS, SHADOWS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const RING_RADIUS = 42;
 const CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -18,6 +19,8 @@ export default function DailyProgressCard({
   totalCount,
   progress,
 }: DailyProgressCardProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const strokeOffset = CIRCUMFERENCE * (1 - progress / 100);
 
   return (
@@ -70,59 +73,60 @@ export default function DailyProgressCard({
   );
 }
 
-const styles = StyleSheet.create({
-  progressCard: {
-    backgroundColor: COLORS.surfaceContainerLowest,
-    borderRadius: RADIUS.xxl,
-    padding: 24,
-    marginBottom: 28,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    ...SHADOWS.lg,
-    overflow: 'hidden',
-  },
-  progressCopy: {
-    zIndex: 1,
-    flex: 1,
-  },
-  progressLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  progressTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.onSurface,
-  },
-  trendBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: COLORS.secondaryContainer + '30',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: RADIUS.round,
-    alignSelf: 'flex-start',
-    marginTop: 12,
-  },
-  trendText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.onSecondaryContainer,
-  },
-  ringContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ringText: {
-    position: 'absolute',
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.onSurface,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    progressCard: {
+      backgroundColor: COLORS.surfaceContainerLowest,
+      borderRadius: RADIUS.xxl,
+      padding: 24,
+      marginBottom: 28,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      ...SHADOWS.lg,
+      overflow: 'hidden',
+    },
+    progressCopy: {
+      zIndex: 1,
+      flex: 1,
+    },
+    progressLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: COLORS.primary,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+      marginBottom: 4,
+    },
+    progressTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: COLORS.onSurface,
+    },
+    trendBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: COLORS.secondaryContainer + '30',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: RADIUS.round,
+      alignSelf: 'flex-start',
+      marginTop: 12,
+    },
+    trendText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: COLORS.onSecondaryContainer,
+    },
+    ringContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    ringText: {
+      position: 'absolute',
+      fontSize: 20,
+      fontWeight: '800',
+      color: COLORS.onSurface,
+    },
+  });

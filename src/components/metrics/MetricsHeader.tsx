@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../../constants/theme';
+import { type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 interface MetricsHeaderProps {
   totalSessions?: number;
@@ -11,6 +12,8 @@ export default function MetricsHeader({
   totalSessions,
   subtitle,
 }: MetricsHeaderProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   const defaultSubtitle =
     totalSessions === undefined
       ? ''
@@ -26,19 +29,20 @@ export default function MetricsHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: COLORS.onBackground,
-  },
-  subtitle: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.onSurfaceVariant,
-    marginTop: 6,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    header: {
+      marginBottom: 24,
+    },
+    title: {
+      fontSize: 36,
+      fontWeight: '700',
+      color: COLORS.onBackground,
+    },
+    subtitle: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: COLORS.onSurfaceVariant,
+      marginTop: 6,
+    },
+  });

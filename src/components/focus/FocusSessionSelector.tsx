@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { COLORS, RADIUS } from '../../constants/theme';
+import { RADIUS, type ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import type { Session } from '../../hooks/useSessions';
 
 interface FocusSessionSelectorProps {
@@ -15,6 +16,8 @@ export default function FocusSessionSelector({
   selectedSession,
   onNextSession,
 }: FocusSessionSelectorProps) {
+  const { colors: COLORS } = useTheme();
+  const styles = useMemo(() => createStyles(COLORS), [COLORS]);
   if (sessions.length === 0) {
     return (
       <View style={styles.noSessionBadge}>
@@ -43,39 +46,40 @@ export default function FocusSessionSelector({
   );
 }
 
-const styles = StyleSheet.create({
-  sessionSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  selectorBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.surfaceContainer,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: RADIUS.round,
-    maxWidth: 280,
-  },
-  selectorText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.onSurfaceVariant,
-    flex: 1,
-    textAlign: 'center',
-  },
-  noSessionBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.surfaceContainer,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: RADIUS.round,
-  },
-  noSessionText: {
-    fontSize: 13,
-    color: COLORS.onSurfaceVariant,
-  },
-});
+const createStyles = (COLORS: ThemeColors) =>
+  StyleSheet.create({
+    sessionSelector: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    selectorBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.surfaceContainer,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: RADIUS.round,
+      maxWidth: 280,
+    },
+    selectorText: {
+      fontSize: 13,
+      fontWeight: '500',
+      color: COLORS.onSurfaceVariant,
+      flex: 1,
+      textAlign: 'center',
+    },
+    noSessionBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: COLORS.surfaceContainer,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: RADIUS.round,
+    },
+    noSessionText: {
+      fontSize: 13,
+      color: COLORS.onSurfaceVariant,
+    },
+  });

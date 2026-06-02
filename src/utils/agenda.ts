@@ -1,5 +1,5 @@
 import type { MaterialIcons } from '@expo/vector-icons';
-import { COLORS } from '../constants/theme';
+import type { ThemeColors } from '../constants/theme';
 import { formatDateKey } from './date';
 
 export const WEEK_DAY_LABELS = [
@@ -37,17 +37,21 @@ export const SUBJECT_ICONS: Record<
   default: 'book',
 };
 
-export const PRIORITY_ICON_BG: Record<string, string> = {
+export const getPriorityIconBg = (
+  COLORS: ThemeColors,
+): Record<string, string> => ({
   ALTA: COLORS.primaryFixed,
   MEDIA: COLORS.secondaryContainer + '50',
   BAJA: COLORS.tertiaryFixed,
-};
+});
 
-export const PRIORITY_ICON_COLOR: Record<string, string> = {
+export const getPriorityIconColor = (
+  COLORS: ThemeColors,
+): Record<string, string> => ({
   ALTA: COLORS.onPrimaryFixedVariant,
   MEDIA: COLORS.onSecondaryContainer,
   BAJA: COLORS.onTertiaryFixedVariant,
-};
+});
 
 export function getWeekDates(referenceDate: Date): Date[] {
   const dayOfWeek = referenceDate.getDay();
