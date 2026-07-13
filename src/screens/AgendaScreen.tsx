@@ -17,7 +17,7 @@ import { getMonthLabel, getWeekDates, isSameDay } from '../utils/agenda';
 
 export default function AgendaScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
-  const { sessions, remove } = useSessions();
+  const { sessions, remove, complete } = useSessions();
   const [weekOffset, setWeekOffset] = useState(0);
 
   const referenceDate = useMemo(() => {
@@ -67,6 +67,16 @@ export default function AgendaScreen() {
     ]);
   };
 
+  const handleComplete = (id: string) => {
+    Alert.alert('Completar sesión', '¿Registrar esta sesión como estudiada?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Completar',
+        onPress: () => complete(id),
+      },
+    ]);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScrollView
@@ -99,6 +109,7 @@ export default function AgendaScreen() {
                 navigation.navigate('NuevaSesion', { sessionId })
               }
               onDelete={handleDelete}
+              onComplete={handleComplete}
             />
           ))
         ) : (

@@ -14,12 +14,14 @@ interface AgendaSessionItemProps {
   session: Session;
   onEdit: (sessionId: string) => void;
   onDelete: (sessionId: string) => void;
+  onComplete: (sessionId: string) => void;
 }
 
 export default function AgendaSessionItem({
   session,
   onEdit,
   onDelete,
+  onComplete,
 }: AgendaSessionItemProps) {
   return (
     <View style={styles.sessionCard}>
@@ -73,6 +75,19 @@ export default function AgendaSessionItem({
 
       <View style={styles.sessionBottom}>
         <View style={styles.actionButtons}>
+          {session.status !== 'completed' && (
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => onComplete(session.id)}
+              accessibilityLabel="Marcar sesión como completada"
+            >
+              <MaterialIcons
+                name="task-alt"
+                size={18}
+                color={COLORS.secondary}
+              />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.actionBtn}
             onPress={() => onEdit(session.id)}
