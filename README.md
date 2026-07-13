@@ -57,6 +57,33 @@ npm install
 npx expo start
 ```
 
+## ☁️ Configuración de Supabase
+
+FocusUp requiere un proyecto de Supabase para autenticar personas y sincronizar
+datos. Crea un archivo `.env` a partir de `.env.example` y completa sus valores:
+
+```bash
+cp .env.example .env
+```
+
+Ejecuta `supabase/migrations/20260712_initial_schema.sql` en el SQL Editor del
+proyecto Supabase. En Authentication habilita el proveedor Email y configura la
+URL de redirección `focusup://` para la confirmación de cuentas.
+
+No subas `.env` al repositorio; contiene configuración específica del proyecto.
+
+## 📦 Generar APK interno
+
+La distribución no utiliza Google Play. Después de iniciar sesión en Expo y
+configurar Supabase, genera una APK instalable con:
+
+```bash
+npx eas build --platform android --profile preview
+```
+
+EAS devolverá un enlace privado para descargar e instalar la APK. Android debe
+permitir la instalación desde esa fuente.
+
 ---
 
 ## 📱 Ejecutar en dispositivo
