@@ -1,9 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import {
-  getPomodoroLogs,
-  type PomodoroLog,
-} from '../storage/asyncStorage';
+import { getPomodoroLogs, type PomodoroLog } from '../storage/asyncStorage';
 
 interface UsePomodoroLogsReturn {
   logs: PomodoroLog[];

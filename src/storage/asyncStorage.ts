@@ -62,7 +62,7 @@ interface PomodoroLogRow {
   study_session_id: string | null;
   duration_minutes: number;
   completed_at: string;
-  study_sessions?: { subject: string } | null;
+  study_sessions?: { subject: string }[] | null;
 }
 
 const toSession = (row: SessionRow): Session => ({
@@ -91,7 +91,7 @@ const toTask = (row: TaskRow): Task => ({
 const toPomodoroLog = (row: PomodoroLogRow): PomodoroLog => ({
   id: row.id,
   sessionId: row.study_session_id ?? undefined,
-  subject: row.study_sessions?.subject,
+  subject: row.study_sessions?.[0]?.subject,
   durationMinutes: row.duration_minutes,
   completedAt: row.completed_at,
 });
@@ -253,7 +253,9 @@ export const updateTask = async (
 export const getPomodoroLogs = async (): Promise<PomodoroLog[]> => {
   const { data, error } = await supabase
     .from('pomodoro_logs')
-    .select('id, study_session_id, duration_minutes, completed_at, study_sessions(subject)')
+    .select(
+      'id, study_session_id, duration_minutes, completed_at, study_sessions(subject)',
+    )
     .order('completed_at', { ascending: false });
   throwIfError(error);
   return (data as PomodoroLogRow[]).map(toPomodoroLog);

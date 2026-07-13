@@ -37,7 +37,7 @@ export default function FocusZoneScreen() {
   const saveCompletedPomodoro = useCallback(
     async (durationMinutes: number) => {
       try {
-        await addPomodoroLog(selectedSession?.id ?? null, durationMinutes);
+        await addPomodoroLog(selectedSessionId ?? null, durationMinutes);
       } catch (error) {
         console.error('Error saving pomodoro:', error);
         Alert.alert(
@@ -46,7 +46,7 @@ export default function FocusZoneScreen() {
         );
       }
     },
-    [selectedSession?.id],
+    [selectedSessionId],
   );
 
   const timer = usePomodoroTimer({

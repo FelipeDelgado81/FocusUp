@@ -111,7 +111,10 @@ export function getSubjectStats(
     }));
 }
 
-export function getStreak(sessions: Session[], logs: PomodoroLog[] = []): number {
+export function getStreak(
+  sessions: Session[],
+  logs: PomodoroLog[] = [],
+): number {
   const completedSessions = sessions.filter(
     (session) => session.status === 'completed',
   );
@@ -174,8 +177,9 @@ export function getMetricsSummary(
   logs: PomodoroLog[] = [],
 ): MetricsSummary {
   const today = getTodayDateKey();
-  const todayLogCount = logs.filter((log) => getLogDateKey(log) === today)
-    .length;
+  const todayLogCount = logs.filter(
+    (log) => getLogDateKey(log) === today,
+  ).length;
 
   return {
     weeklyData: getWeeklyData(sessions, logs),
@@ -191,6 +195,8 @@ export function getMetricsSummary(
               session.date === today && session.status === 'completed',
           ).length,
     totalStudyMinutes:
-      logs.length > 0 ? getTotalPomodoroMinutes(logs) : getTotalStudyMinutes(sessions),
+      logs.length > 0
+        ? getTotalPomodoroMinutes(logs)
+        : getTotalStudyMinutes(sessions),
   };
 }
