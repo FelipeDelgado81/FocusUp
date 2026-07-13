@@ -5,6 +5,7 @@ import {
   addSession,
   updateSession,
   deleteSession,
+  completeSession,
   type Session,
 } from '../storage/asyncStorage';
 
@@ -19,6 +20,7 @@ interface UseSessionsReturn {
   add: (session: NewSession) => Promise<void>;
   update: (id: string, updates: Partial<Omit<Session, 'id'>>) => Promise<void>;
   remove: (id: string) => Promise<void>;
+  complete: (id: string) => Promise<void>;
 }
 
 export function useSessions(): UseSessionsReturn {
@@ -56,11 +58,16 @@ export function useSessions(): UseSessionsReturn {
     setSessions(updated);
   }, []);
 
+  const complete = useCallback(async (id: string) => {
+    const updated = await completeSession(id);
+    setSessions(updated);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       refresh();
     }, [refresh]),
   );
 
-  return { sessions, loading, refresh, add, update, remove };
+  return { sessions, loading, refresh, add, update, remove, complete };
 }

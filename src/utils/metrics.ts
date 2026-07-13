@@ -44,6 +44,9 @@ export interface MetricsSummary {
 }
 
 export function getWeeklyData(sessions: Session[]): number[] {
+  const completedSessions = sessions.filter(
+    (session) => session.status === 'completed',
+  );
   const now = new Date();
   const startOfWeek = new Date(now);
   const dayOfWeek = now.getDay();
@@ -54,8 +57,9 @@ export function getWeeklyData(sessions: Session[]): number[] {
   const counts = DAY_LABELS.map((_, index) => {
     const day = new Date(startOfWeek);
     day.setDate(startOfWeek.getDate() + index);
-    return sessions.filter((session) => session.date === formatDateKey(day))
-      .length;
+    return completedSessions.filter(
+      (session) => session.date === formatDateKey(day),
+    ).length;
   });
 
   const max = Math.max(...counts, 1);
@@ -63,13 +67,16 @@ export function getWeeklyData(sessions: Session[]): number[] {
 }
 
 export function getSubjectStats(sessions: Session[]): SubjectStat[] {
+  const completedSessions = sessions.filter(
+    (session) => session.status === 'completed',
+  );
   const subjectCount: Record<string, number> = {};
 
-  for (const session of sessions) {
+  for (const session of completedSessions) {
     subjectCount[session.subject] = (subjectCount[session.subject] || 0) + 1;
   }
 
-  const total = sessions.length || 1;
+  const total = completedSessions.length || 1;
 
   return Object.entries(subjectCount)
     .sort(([, a], [, b]) => b - a)
@@ -84,9 +91,12 @@ export function getSubjectStats(sessions: Session[]): SubjectStat[] {
 }
 
 export function getStreak(sessions: Session[]): number {
-  if (sessions.length === 0) return 0;
+  const completedSessions = sessions.filter(
+    (session) => session.status === 'completed',
+  );
+  if (completedSessions.length === 0) return 0;
 
-  const dates = [...new Set(sessions.map((session) => session.date))]
+  const dates = [...new Set(completedSessions.map((session) => session.date))]
     .sort()
     .reverse();
   let streak = 0;
@@ -112,12 +122,14 @@ function parseTimeToMinutes(time: string): number {
 }
 
 export function getTotalStudyMinutes(sessions: Session[]): number {
-  return sessions.reduce((total, session) => {
-    const start = parseTimeToMinutes(session.startTime);
-    const end = parseTimeToMinutes(session.endTime);
-    const duration = end - start;
-    return total + (duration > 0 ? duration : 0);
-  }, 0);
+  return sessions
+    .filter((session) => session.status === 'completed')
+    .reduce((total, session) => {
+      const start = parseTimeToMinutes(session.startTime);
+      const end = parseTimeToMinutes(session.endTime);
+      const duration = end - start;
+      return total + (duration > 0 ? duration : 0);
+    }, 0);
 }
 
 export function formatStudyTime(minutes: number): string {
@@ -141,7 +153,9 @@ export function getMetricsSummary(
     streak: getStreak(sessions),
     totalSessions: sessions.length,
     completedTasks: tasks.filter((task) => task.completed).length,
-    todaySessions: sessions.filter((session) => session.date === today).length,
+    todaySessions: sessions.filter(
+      (session) => session.date === today && session.status === 'completed',
+    ).length,
     totalStudyMinutes: getTotalStudyMinutes(sessions),
   };
 }
