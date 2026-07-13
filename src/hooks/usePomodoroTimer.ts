@@ -5,6 +5,7 @@ const SECONDS_PER_MINUTE = 60;
 
 interface UsePomodoroTimerOptions {
   focusMinutes: number;
+  onComplete?: (durationMinutes: number) => void | Promise<void>;
 }
 
 interface UsePomodoroTimerReturn {
@@ -20,6 +21,7 @@ interface UsePomodoroTimerReturn {
 
 export function usePomodoroTimer({
   focusMinutes,
+  onComplete,
 }: UsePomodoroTimerOptions): UsePomodoroTimerReturn {
   const totalSeconds = useMemo(
     () => focusMinutes * SECONDS_PER_MINUTE,
@@ -40,6 +42,7 @@ export function usePomodoroTimer({
     if (timeLeft === 0) {
       setIsActive(false);
       setCompletedPomodoros((value) => value + 1);
+      void onComplete?.(focusMinutes);
       Alert.alert(
         '¡Sesión completada!',
         `Has terminado un pomodoro de ${focusMinutes} minutos.`,
@@ -52,7 +55,7 @@ export function usePomodoroTimer({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [focusMinutes, isActive, timeLeft]);
+  }, [focusMinutes, isActive, onComplete, timeLeft]);
 
   const progress = totalSeconds > 0 ? timeLeft / totalSeconds : 1;
 

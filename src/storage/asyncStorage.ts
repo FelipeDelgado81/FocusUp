@@ -23,6 +23,14 @@ export interface Task {
   category: string;
 }
 
+export interface PomodoroLog {
+  id: string;
+  sessionId?: string;
+  subject?: string;
+  durationMinutes: number;
+  completedAt: string;
+}
+
 type NewSession = Omit<Session, 'id' | 'status' | 'completedAt'>;
 type NewTask = Omit<Task, 'id' | 'completed'>;
 
@@ -49,6 +57,14 @@ interface TaskRow {
   category: string;
 }
 
+interface PomodoroLogRow {
+  id: string;
+  study_session_id: string | null;
+  duration_minutes: number;
+  completed_at: string;
+  study_sessions?: { subject: string } | null;
+}
+
 const toSession = (row: SessionRow): Session => ({
   id: row.id,
   subject: row.subject,
@@ -70,6 +86,14 @@ const toTask = (row: TaskRow): Task => ({
   priority: row.priority,
   completed: row.completed,
   category: row.category,
+});
+
+const toPomodoroLog = (row: PomodoroLogRow): PomodoroLog => ({
+  id: row.id,
+  sessionId: row.study_session_id ?? undefined,
+  subject: row.study_sessions?.subject,
+  durationMinutes: row.duration_minutes,
+  completedAt: row.completed_at,
 });
 
 async function getUserId(): Promise<string> {
@@ -222,4 +246,29 @@ export const updateTask = async (
     .eq('id', taskId);
   throwIfError(error);
   return getTasks();
+};
+
+// Pomodoro logs
+
+export const getPomodoroLogs = async (): Promise<PomodoroLog[]> => {
+  const { data, error } = await supabase
+    .from('pomodoro_logs')
+    .select('id, study_session_id, duration_minutes, completed_at, study_sessions(subject)')
+    .order('completed_at', { ascending: false });
+  throwIfError(error);
+  return (data as PomodoroLogRow[]).map(toPomodoroLog);
+};
+
+export const addPomodoroLog = async (
+  sessionId: string | null,
+  durationMinutes: number,
+): Promise<PomodoroLog[]> => {
+  const userId = await getUserId();
+  const { error } = await supabase.from('pomodoro_logs').insert({
+    user_id: userId,
+    study_session_id: sessionId,
+    duration_minutes: durationMinutes,
+  });
+  throwIfError(error);
+  return getPomodoroLogs();
 };

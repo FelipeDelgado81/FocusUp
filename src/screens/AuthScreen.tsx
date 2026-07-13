@@ -33,7 +33,10 @@ export default function AuthScreen() {
     setSubmitting(true);
     const credentials = { email: email.trim().toLowerCase(), password };
     const result = isRegistering
-      ? await supabase.auth.signUp(credentials)
+      ? await supabase.auth.signUp({
+          ...credentials,
+          options: { emailRedirectTo: 'focusup://' },
+        })
       : await supabase.auth.signInWithPassword(credentials);
     setSubmitting(false);
 
@@ -47,6 +50,33 @@ export default function AuthScreen() {
         'Confirma tu cuenta para comenzar a usar FocusUp.',
       );
     }
+  };
+
+  const sendPasswordReset = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      Alert.alert(
+        'Correo requerido',
+        'Ingresa tu correo para enviarte el enlace de recuperación.',
+      );
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: 'focusup://',
+    });
+    setSubmitting(false);
+
+    if (error) {
+      Alert.alert('No fue posible enviar el correo', error.message);
+      return;
+    }
+
+    Alert.alert(
+      'Revisa tu correo',
+      'Te enviamos un enlace para recuperar tu contraseña.',
+    );
   };
 
   if (!isSupabaseConfigured) {
@@ -110,6 +140,11 @@ export default function AuthScreen() {
             {isRegistering ? 'Ya tengo una cuenta' : 'Crear una cuenta'}
           </Text>
         </TouchableOpacity>
+        {!isRegistering && (
+          <TouchableOpacity disabled={submitting} onPress={sendPasswordReset}>
+            <Text style={styles.secondaryLink}>Olvide mi contraseña</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -154,5 +189,10 @@ const styles = StyleSheet.create({
     padding: 10,
     color: COLORS.primary,
     fontWeight: '700',
+  },
+  secondaryLink: {
+    textAlign: 'center',
+    color: COLORS.onSurfaceVariant,
+    fontWeight: '600',
   },
 });
