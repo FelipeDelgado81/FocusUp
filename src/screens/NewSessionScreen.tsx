@@ -124,7 +124,7 @@ export default function NewSessionScreen() {
       return;
     }
 
-    const sessionData: Omit<Session, 'id'> = {
+    const sessionData: Omit<Session, 'id' | 'status' | 'completedAt'> = {
       subject: trimmedSubject,
       topic: trimmedTopic || trimmedSubject,
       date,

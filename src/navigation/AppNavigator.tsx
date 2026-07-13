@@ -14,6 +14,8 @@ import MetricsScreen from '../screens/MetricsScreen';
 import TasksScreen from '../screens/TasksScreen';
 import NewSessionScreen from '../screens/NewSessionScreen';
 import NewTaskScreen from '../screens/NewTaskScreen';
+import AuthScreen from '../screens/AuthScreen';
+import { useAuth } from '../providers/AuthProvider';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -89,37 +91,51 @@ function TabNavigator() {
 }
 
 export default function AppNavigator() {
+  const { session, loading } = useAuth();
+
+  if (loading) return null;
+
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Tabs" component={TabNavigator} />
-        <Stack.Screen
-          name="NuevaSesion"
-          component={NewSessionScreen}
-          options={{
-            headerShown: true,
-            title: 'Nueva Sesión',
-            headerStyle: { backgroundColor: COLORS.background },
-            headerTintColor: COLORS.primary,
-            headerTitleStyle: { fontWeight: '700', color: COLORS.onBackground },
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-          }}
-        />
-        <Stack.Screen
-          name="NuevaTarea"
-          component={NewTaskScreen}
-          options={({ route }: { route: NuevaTareaRouteProp }) => ({
-            headerShown: true,
-            title: route.params?.taskId ? 'Editar Tarea' : 'Nueva Tarea',
-            headerStyle: { backgroundColor: COLORS.background },
-            headerTintColor: COLORS.primary,
-            headerTitleStyle: { fontWeight: '700', color: COLORS.onBackground },
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-          })}
-        />
-      </Stack.Navigator>
+      {!session ? (
+        <AuthScreen />
+      ) : (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Tabs" component={TabNavigator} />
+          <Stack.Screen
+            name="NuevaSesion"
+            component={NewSessionScreen}
+            options={{
+              headerShown: true,
+              title: 'Nueva Sesión',
+              headerStyle: { backgroundColor: COLORS.background },
+              headerTintColor: COLORS.primary,
+              headerTitleStyle: {
+                fontWeight: '700',
+                color: COLORS.onBackground,
+              },
+              presentation: 'modal',
+              animation: 'slide_from_bottom',
+            }}
+          />
+          <Stack.Screen
+            name="NuevaTarea"
+            component={NewTaskScreen}
+            options={({ route }: { route: NuevaTareaRouteProp }) => ({
+              headerShown: true,
+              title: route.params?.taskId ? 'Editar Tarea' : 'Nueva Tarea',
+              headerStyle: { backgroundColor: COLORS.background },
+              headerTintColor: COLORS.primary,
+              headerTitleStyle: {
+                fontWeight: '700',
+                color: COLORS.onBackground,
+              },
+              presentation: 'modal',
+              animation: 'slide_from_bottom',
+            })}
+          />
+        </Stack.Navigator>
+      )}
     </NavigationContainer>
   );
 }
