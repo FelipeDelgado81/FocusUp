@@ -1,14 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const SESSIONS_KEY = '@focusup_sessions';
-const TASKS_KEY = '@focusup_tasks';
-
-let idCounter = 0;
-const generateId = (): string => {
-  const timestamp = Date.now().toString(36);
-  idCounter += 1;
-  return `${timestamp}-${idCounter}-${Math.random().toString(36).slice(2, 7)}`;
-};
+import { supabase } from '../lib/supabase';
 
 export interface Session {
   id: string;
@@ -20,6 +10,8 @@ export interface Session {
   priority: string;
   location?: string;
   notes?: string;
+  status: 'scheduled' | 'completed';
+  completedAt?: string;
 }
 
 export interface Task {
@@ -31,121 +23,203 @@ export interface Task {
   category: string;
 }
 
-type NewSession = Omit<Session, 'id'>;
+type NewSession = Omit<Session, 'id' | 'status' | 'completedAt'>;
 type NewTask = Omit<Task, 'id' | 'completed'>;
 
-// --- Sessions ---
+interface SessionRow {
+  id: string;
+  subject: string;
+  topic: string;
+  scheduled_date: string;
+  start_time: string;
+  end_time: string;
+  priority: string;
+  location: string | null;
+  notes: string | null;
+  status: 'scheduled' | 'completed';
+  completed_at: string | null;
+}
+
+interface TaskRow {
+  id: string;
+  title: string;
+  due_date: string | null;
+  priority: string;
+  completed: boolean;
+  category: string;
+}
+
+const toSession = (row: SessionRow): Session => ({
+  id: row.id,
+  subject: row.subject,
+  topic: row.topic,
+  date: row.scheduled_date,
+  startTime: row.start_time.slice(0, 5),
+  endTime: row.end_time.slice(0, 5),
+  priority: row.priority,
+  location: row.location ?? undefined,
+  notes: row.notes ?? undefined,
+  status: row.status,
+  completedAt: row.completed_at ?? undefined,
+});
+
+const toTask = (row: TaskRow): Task => ({
+  id: row.id,
+  title: row.title,
+  dueDate: row.due_date ?? 'Sin fecha',
+  priority: row.priority,
+  completed: row.completed,
+  category: row.category,
+});
+
+async function getUserId(): Promise<string> {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) {
+    throw new Error('Debes iniciar sesión para acceder a tus datos.');
+  }
+  return data.user.id;
+}
+
+function throwIfError(error: { message: string } | null): void {
+  if (error) throw new Error(error.message);
+}
+
+// Sessions
 
 export const getSessions = async (): Promise<Session[]> => {
-  try {
-    const json = await AsyncStorage.getItem(SESSIONS_KEY);
-    if (json !== null) {
-      return JSON.parse(json) as Session[];
-    }
-    return [];
-  } catch (e) {
-    console.error('Error reading sessions:', e);
-    return [];
-  }
-};
-
-export const saveSessions = async (sessions: Session[]): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
-  } catch (e) {
-    console.error('Error saving sessions:', e);
-  }
+  const { data, error } = await supabase
+    .from('study_sessions')
+    .select('*')
+    .order('scheduled_date', { ascending: true })
+    .order('start_time', { ascending: true });
+  throwIfError(error);
+  return (data as SessionRow[]).map(toSession);
 };
 
 export const addSession = async (session: NewSession): Promise<Session[]> => {
-  const sessions = await getSessions();
-  const newSession: Session = {
-    ...session,
-    id: generateId(),
-  };
-  const updated = [...sessions, newSession];
-  await saveSessions(updated);
-  return updated;
+  const userId = await getUserId();
+  const { error } = await supabase.from('study_sessions').insert({
+    user_id: userId,
+    subject: session.subject,
+    topic: session.topic,
+    scheduled_date: session.date,
+    start_time: session.startTime,
+    end_time: session.endTime,
+    priority: session.priority,
+    location: session.location || null,
+    notes: session.notes || null,
+  });
+  throwIfError(error);
+  return getSessions();
 };
 
 export const deleteSession = async (sessionId: string): Promise<Session[]> => {
-  const sessions = await getSessions();
-  const updated = sessions.filter((s) => s.id !== sessionId);
-  await saveSessions(updated);
-  return updated;
+  const { error } = await supabase
+    .from('study_sessions')
+    .delete()
+    .eq('id', sessionId);
+  throwIfError(error);
+  return getSessions();
 };
 
 export const updateSession = async (
   sessionId: string,
   updates: Partial<Omit<Session, 'id'>>,
 ): Promise<Session[]> => {
-  const sessions = await getSessions();
-  const updated = sessions.map((s) =>
-    s.id === sessionId ? { ...s, ...updates } : s,
-  );
-  await saveSessions(updated);
-  return updated;
+  const payload = {
+    ...(updates.subject !== undefined && { subject: updates.subject }),
+    ...(updates.topic !== undefined && { topic: updates.topic }),
+    ...(updates.date !== undefined && { scheduled_date: updates.date }),
+    ...(updates.startTime !== undefined && { start_time: updates.startTime }),
+    ...(updates.endTime !== undefined && { end_time: updates.endTime }),
+    ...(updates.priority !== undefined && { priority: updates.priority }),
+    ...(updates.location !== undefined && {
+      location: updates.location || null,
+    }),
+    ...(updates.notes !== undefined && { notes: updates.notes || null }),
+    ...(updates.status !== undefined && { status: updates.status }),
+    ...(updates.completedAt !== undefined && {
+      completed_at: updates.completedAt,
+    }),
+  };
+  const { error } = await supabase
+    .from('study_sessions')
+    .update(payload)
+    .eq('id', sessionId);
+  throwIfError(error);
+  return getSessions();
 };
 
-// --- Tasks ---
+export const completeSession = async (sessionId: string): Promise<Session[]> =>
+  updateSession(sessionId, {
+    status: 'completed',
+    completedAt: new Date().toISOString(),
+  });
+
+// Tasks
 
 export const getTasks = async (): Promise<Task[]> => {
-  try {
-    const json = await AsyncStorage.getItem(TASKS_KEY);
-    if (json !== null) {
-      return JSON.parse(json) as Task[];
-    }
-    return [];
-  } catch (e) {
-    console.error('Error reading tasks:', e);
-    return [];
-  }
-};
-
-export const saveTasks = async (tasks: Task[]): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
-  } catch (e) {
-    console.error('Error saving tasks:', e);
-  }
-};
-
-export const toggleTaskCompleted = async (taskId: string): Promise<Task[]> => {
-  const tasks = await getTasks();
-  const updated = tasks.map((t) =>
-    t.id === taskId ? { ...t, completed: !t.completed } : t,
-  );
-  await saveTasks(updated);
-  return updated;
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .order('completed', { ascending: true })
+    .order('due_date', { ascending: true, nullsFirst: false });
+  throwIfError(error);
+  return (data as TaskRow[]).map(toTask);
 };
 
 export const addTask = async (task: NewTask): Promise<Task[]> => {
-  const tasks = await getTasks();
-  const newTask: Task = {
-    ...task,
-    id: generateId(),
-    completed: false,
-  };
-  const updated = [...tasks, newTask];
-  await saveTasks(updated);
-  return updated;
+  const userId = await getUserId();
+  const { error } = await supabase.from('tasks').insert({
+    user_id: userId,
+    title: task.title,
+    due_date: task.dueDate === 'Sin fecha' ? null : task.dueDate,
+    priority: task.priority,
+    category: task.category,
+  });
+  throwIfError(error);
+  return getTasks();
+};
+
+export const toggleTaskCompleted = async (taskId: string): Promise<Task[]> => {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('completed')
+    .eq('id', taskId)
+    .single();
+  throwIfError(error);
+  if (!data) throw new Error('No encontramos la tarea solicitada.');
+  const { error: updateError } = await supabase
+    .from('tasks')
+    .update({ completed: !data.completed })
+    .eq('id', taskId);
+  throwIfError(updateError);
+  return getTasks();
 };
 
 export const deleteTask = async (taskId: string): Promise<Task[]> => {
-  const tasks = await getTasks();
-  const updated = tasks.filter((t) => t.id !== taskId);
-  await saveTasks(updated);
-  return updated;
+  const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+  throwIfError(error);
+  return getTasks();
 };
 
 export const updateTask = async (
   taskId: string,
   updates: Partial<Omit<Task, 'id'>>,
 ): Promise<Task[]> => {
-  const tasks = await getTasks();
-  const updated = tasks.map((t) =>
-    t.id === taskId ? { ...t, ...updates } : t,
-  );
-  await saveTasks(updated);
-  return updated;
+  const payload = {
+    ...(updates.title !== undefined && { title: updates.title }),
+    ...(updates.dueDate !== undefined && {
+      due_date: updates.dueDate === 'Sin fecha' ? null : updates.dueDate,
+    }),
+    ...(updates.priority !== undefined && { priority: updates.priority }),
+    ...(updates.category !== undefined && { category: updates.category }),
+    ...(updates.completed !== undefined && { completed: updates.completed }),
+  };
+  const { error } = await supabase
+    .from('tasks')
+    .update(payload)
+    .eq('id', taskId);
+  throwIfError(error);
+  return getTasks();
 };

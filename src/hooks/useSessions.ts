@@ -10,7 +10,7 @@ import {
 
 export type { Session } from '../storage/asyncStorage';
 
-type NewSession = Omit<Session, 'id'>;
+type NewSession = Omit<Session, 'id' | 'status' | 'completedAt'>;
 
 interface UseSessionsReturn {
   sessions: Session[];
