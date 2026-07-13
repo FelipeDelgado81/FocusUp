@@ -1,5 +1,6 @@
 import type { MaterialIcons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
+import type { PomodoroLog } from '../storage/asyncStorage';
 import type { Session } from '../hooks/useSessions';
 import type { Task } from '../storage/asyncStorage';
 import { formatDateKey, getTodayDateKey } from './date';
@@ -43,7 +44,14 @@ export interface MetricsSummary {
   totalStudyMinutes: number;
 }
 
-export function getWeeklyData(sessions: Session[]): number[] {
+function getLogDateKey(log: PomodoroLog): string {
+  return formatDateKey(new Date(log.completedAt));
+}
+
+export function getWeeklyData(
+  sessions: Session[],
+  logs: PomodoroLog[] = [],
+): number[] {
   const completedSessions = sessions.filter(
     (session) => session.status === 'completed',
   );
@@ -57,26 +65,39 @@ export function getWeeklyData(sessions: Session[]): number[] {
   const counts = DAY_LABELS.map((_, index) => {
     const day = new Date(startOfWeek);
     day.setDate(startOfWeek.getDate() + index);
-    return completedSessions.filter(
-      (session) => session.date === formatDateKey(day),
-    ).length;
+    const dateKey = formatDateKey(day);
+    if (logs.length > 0) {
+      return logs.filter((log) => getLogDateKey(log) === dateKey).length;
+    }
+    return completedSessions.filter((session) => session.date === dateKey)
+      .length;
   });
 
   const max = Math.max(...counts, 1);
   return counts.map((count) => Math.round((count / max) * 100));
 }
 
-export function getSubjectStats(sessions: Session[]): SubjectStat[] {
+export function getSubjectStats(
+  sessions: Session[],
+  logs: PomodoroLog[] = [],
+): SubjectStat[] {
   const completedSessions = sessions.filter(
     (session) => session.status === 'completed',
   );
   const subjectCount: Record<string, number> = {};
 
-  for (const session of completedSessions) {
-    subjectCount[session.subject] = (subjectCount[session.subject] || 0) + 1;
+  if (logs.length > 0) {
+    for (const log of logs) {
+      const subject = log.subject ?? 'Sin asignar';
+      subjectCount[subject] = (subjectCount[subject] || 0) + 1;
+    }
+  } else {
+    for (const session of completedSessions) {
+      subjectCount[session.subject] = (subjectCount[session.subject] || 0) + 1;
+    }
   }
 
-  const total = completedSessions.length || 1;
+  const total = logs.length || completedSessions.length || 1;
 
   return Object.entries(subjectCount)
     .sort(([, a], [, b]) => b - a)
@@ -90,15 +111,17 @@ export function getSubjectStats(sessions: Session[]): SubjectStat[] {
     }));
 }
 
-export function getStreak(sessions: Session[]): number {
+export function getStreak(sessions: Session[], logs: PomodoroLog[] = []): number {
   const completedSessions = sessions.filter(
     (session) => session.status === 'completed',
   );
-  if (completedSessions.length === 0) return 0;
+  if (completedSessions.length === 0 && logs.length === 0) return 0;
 
-  const dates = [...new Set(completedSessions.map((session) => session.date))]
-    .sort()
-    .reverse();
+  const dateValues =
+    logs.length > 0
+      ? logs.map(getLogDateKey)
+      : completedSessions.map((session) => session.date);
+  const dates = [...new Set(dateValues)].sort().reverse();
   let streak = 0;
   const expected = new Date();
 
@@ -132,6 +155,10 @@ export function getTotalStudyMinutes(sessions: Session[]): number {
     }, 0);
 }
 
+export function getTotalPomodoroMinutes(logs: PomodoroLog[]): number {
+  return logs.reduce((total, log) => total + log.durationMinutes, 0);
+}
+
 export function formatStudyTime(minutes: number): string {
   if (minutes === 0) return '0 min';
   const h = Math.floor(minutes / 60);
@@ -144,18 +171,26 @@ export function formatStudyTime(minutes: number): string {
 export function getMetricsSummary(
   sessions: Session[],
   tasks: Task[],
+  logs: PomodoroLog[] = [],
 ): MetricsSummary {
   const today = getTodayDateKey();
+  const todayLogCount = logs.filter((log) => getLogDateKey(log) === today)
+    .length;
 
   return {
-    weeklyData: getWeeklyData(sessions),
-    subjectStats: getSubjectStats(sessions),
-    streak: getStreak(sessions),
+    weeklyData: getWeeklyData(sessions, logs),
+    subjectStats: getSubjectStats(sessions, logs),
+    streak: getStreak(sessions, logs),
     totalSessions: sessions.length,
     completedTasks: tasks.filter((task) => task.completed).length,
-    todaySessions: sessions.filter(
-      (session) => session.date === today && session.status === 'completed',
-    ).length,
-    totalStudyMinutes: getTotalStudyMinutes(sessions),
+    todaySessions:
+      logs.length > 0
+        ? todayLogCount
+        : sessions.filter(
+            (session) =>
+              session.date === today && session.status === 'completed',
+          ).length,
+    totalStudyMinutes:
+      logs.length > 0 ? getTotalPomodoroMinutes(logs) : getTotalStudyMinutes(sessions),
   };
 }

@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import FocusControls from '../components/focus/FocusControls';
@@ -11,6 +11,7 @@ import { COLORS } from '../constants/theme';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
 import { useSessions } from '../hooks/useSessions';
 import type { RootStackNavigationProp } from '../navigation/types';
+import { addPomodoroLog } from '../storage/asyncStorage';
 import { getTodayDateKey } from '../utils/date';
 
 const DEFAULT_FOCUS_MINUTES = 25;
@@ -33,7 +34,25 @@ export default function FocusZoneScreen() {
     (session) => session.id === selectedSessionId,
   );
 
-  const timer = usePomodoroTimer({ focusMinutes: DEFAULT_FOCUS_MINUTES });
+  const saveCompletedPomodoro = useCallback(
+    async (durationMinutes: number) => {
+      try {
+        await addPomodoroLog(selectedSession?.id ?? null, durationMinutes);
+      } catch (error) {
+        console.error('Error saving pomodoro:', error);
+        Alert.alert(
+          'Pomodoro no sincronizado',
+          'El ciclo terminó, pero no pudimos guardarlo en Supabase. Revisa tu conexión e inténtalo de nuevo.',
+        );
+      }
+    },
+    [selectedSession?.id],
+  );
+
+  const timer = usePomodoroTimer({
+    focusMinutes: DEFAULT_FOCUS_MINUTES,
+    onComplete: saveCompletedPomodoro,
+  });
 
   useEffect(() => {
     if (todaySessions.length === 0) {

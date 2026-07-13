@@ -8,6 +8,7 @@ import StreakBanner from '../components/metrics/StreakBanner';
 import SubjectStatsList from '../components/metrics/SubjectStatsList';
 import WeeklyChart from '../components/metrics/WeeklyChart';
 import { COLORS } from '../constants/theme';
+import { usePomodoroLogs } from '../hooks/usePomodoroLogs';
 import { useSessions } from '../hooks/useSessions';
 import { useTasks } from '../hooks/useTasks';
 import { getMetricsSummary } from '../utils/metrics';
@@ -15,10 +16,11 @@ import { getMetricsSummary } from '../utils/metrics';
 export default function MetricsScreen() {
   const { sessions } = useSessions();
   const { tasks } = useTasks();
+  const { logs } = usePomodoroLogs();
 
   const metrics = useMemo(
-    () => getMetricsSummary(sessions, tasks),
-    [sessions, tasks],
+    () => getMetricsSummary(sessions, tasks, logs),
+    [sessions, tasks, logs],
   );
   const isEmpty = sessions.length === 0 && tasks.length === 0;
 
